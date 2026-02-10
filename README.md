@@ -1,6 +1,6 @@
 # OpenHands Trajectory Visualizer
 
-A visualizer for OpenHands conversation trajectories. Useful for debugging or simply for inspecting the conversation history.
+A visualizer for OpenHands CLI conversation trajectories. Useful for debugging or simply for inspecting the conversation history.
 
 ![Event list](./img/trajectory_visualizer_event_list.png)
 Event list: get all events for every agent conversation
@@ -10,6 +10,8 @@ Action detail: inspect action details, blending or unblending as needed
 
 ![Model stats](./img/trajectory_visualizer_stats.png)
 Model stats: inspect token usage and average turn time per model
+
+Try the example (here)[https://adriantineo.com/openhands-trajectory-visualizer/].
 
 ## Setup
 

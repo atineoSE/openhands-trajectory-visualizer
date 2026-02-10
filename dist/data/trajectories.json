@@ -1,0 +1,32 @@
+[
+  {
+    "id": "911e7921cf00464cbdbe1fc04a699c74",
+    "title": "911e7921cf00464cbdbe1fc04a699c74",
+    "model": "openrouter/moonshotai/kimi-k2-0905",
+    "created": "Mon Feb  9 20:16:56 2026",
+    "eventCount": 269,
+    "promptTokens": 10341868,
+    "completionTokens": 40457,
+    "reasoningTokens": 0,
+    "cacheReadTokens": 8939712,
+    "cachePct": 86,
+    "totalTokens": 10382325,
+    "avgAgentTurnTime": 21.1,
+    "totalConversationTime": 4701.5
+  },
+  {
+    "id": "7510150b294841dda032a87239ebdf25",
+    "title": "7510150b294841dda032a87239ebdf25",
+    "model": "openrouter/moonshotai/kimi-k2.5",
+    "created": "Mon Feb  9 16:26:41 2026",
+    "eventCount": 103,
+    "promptTokens": 1896503,
+    "completionTokens": 12821,
+    "reasoningTokens": 5542,
+    "cacheReadTokens": 1625856,
+    "cachePct": 86,
+    "totalTokens": 1909324,
+    "avgAgentTurnTime": 12.9,
+    "totalConversationTime": 1364.5
+  }
+]

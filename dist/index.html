@@ -1,0 +1,1726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenHands Trajectory Visualizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 320px;
+            background: #1a1a2e;
+            color: #eee;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #333;
+        }
+
+        .sidebar.custom-dir {
+            background: yellow;
+            color: black;
+        }
+
+        .sidebar.custom-dir .sidebar-header {
+            background: #e6e600;
+            border-bottom: 1px solid #999;
+        }
+
+        .sidebar.custom-dir .sidebar-header h1,
+        .sidebar.custom-dir .sidebar-header p,
+        .sidebar.custom-dir #statusText {
+            color: black;
+        }
+
+        .sidebar.custom-dir .trajectory-item {
+            background: #ffffcc;
+            color: black;
+        }
+
+        .sidebar.custom-dir .trajectory-item:hover,
+        .sidebar.custom-dir .trajectory-item.active {
+            background: #ffff99;
+            border-color: #999;
+        }
+
+        .sidebar.custom-dir .trajectory-id {
+            color: #666;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: #16213e;
+            border-bottom: 1px solid #333;
+        }
+
+        .sidebar-header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-header p {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .trajectory-item {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            background: #16213e;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .trajectory-item:hover {
+            background: #1f3460;
+            border-color: #4a6fa5;
+        }
+
+        .trajectory-item.active {
+            background: #1f3460;
+            border-color: #4a6fa5;
+        }
+
+        .trajectory-id {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 4px;
+            word-break: break-all;
+        }
+
+        .trajectory-title {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .trajectory-meta {
+            font-size: 11px;
+            color: #666;
+            display: flex;
+            gap: 12px;
+        }
+
+        .trajectory-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #f5f5f5;
+            overflow: hidden;
+        }
+
+        .main-header {
+            padding: 16px 24px;
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .main-header-content {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .main-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: #4a6fa5;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3d5d8a;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .main-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        /* Stats Button in Sidebar */
+        .stats-btn {
+            margin-top: 12px;
+            padding: 6px 12px;
+            background: #4a6fa5;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .stats-btn:hover {
+            background: #3d5d8a;
+        }
+
+        /* Overlay Modal */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .overlay.active {
+            display: flex;
+        }
+
+        .overlay-content {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .overlay-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .overlay-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .close-btn {
+            background: #e0e0e0;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            color: #333;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: #d0d0d0;
+        }
+
+        /* Stats Table */
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .stats-table th,
+        .stats-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .stats-table th {
+            background: #f5f5f5;
+            font-weight: 600;
+            color: #555;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+
+        .stats-table td {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .stats-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .stats-table .model-name {
+            font-weight: 500;
+            color: #4a6fa5;
+        }
+
+        .stats-table .number-cell {
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #888;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* Event Items */
+        .event-list {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .event-item {
+            background: #fff;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            overflow: hidden;
+            transition: box-shadow 0.2s ease;
+        }
+
+        .event-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+
+        .event-header {
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .event-header:hover {
+            background: #f8f9fa;
+        }
+
+        .event-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .event-icon.system {
+            background: #e8f4fd;
+            color: #1976d2;
+        }
+
+        .event-icon.user {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .event-icon.agent {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .event-icon.action {
+            background:#e8f5e9;
+            color:#2e7d32;
+        }
+
+        .event-icon.observation {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .event-icon.condensation {
+            background: #fff3e0;
+            color: #a2008a;
+        }
+
+        .event-icon.unknown {
+            background: #6c757d;
+            color: #fff;
+        }
+
+        .event-icon.error {
+            background: #dc3545;
+            color: #fff;
+        }
+
+        .event-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .event-kind {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .event-kind.system { color: #1976d2; }
+        .event-kind.user { color: #1565c0; }
+        .event-kind.agent { color: #2e7d32; }
+        .event-kind.action { color: #2e7d32; }
+        .event-kind.observation { color: #977601; }
+        .event-kind.condensation { color: #a2008a; }
+
+
+        .event-meta {
+            font-size: 11px;
+            color: #888;
+        }
+
+        .timestamp-time {
+            font-weight: 600;
+            color: #4a6fa5;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+
+        .timestamp-date {
+            color: #888;
+        }
+
+        .event-duration {
+            font-weight: 600;
+            color: #28a745;
+            font-family: 'Monaco', 'Menlo', monospace;
+            margin-right: 8px;
+        }
+
+        .event-toggle {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            transition: transform 0.2s ease;
+        }
+
+        .event-toggle.expanded {
+            transform: rotate(90deg);
+        }
+
+        .event-content {
+            display: none;
+            padding: 0 20px 20px 64px;
+        }
+
+        .event-content.expanded {
+            display: block;
+        }
+
+        .event-detail {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .event-detail:last-child {
+            margin-bottom: 0;
+        }
+
+        .event-detail-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .event-detail-content {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #333;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .event-detail-content pre {
+            background: #1a1a2e;
+            color: #eee;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .event-detail-content code {
+            background: #e8e8e8;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .event-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .expand-content-btn {
+            background: #4a6fa5;
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .expand-content-btn:hover {
+            background: #3a5a8a;
+        }
+
+        .copy-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            margin-left: 8px;
+        }
+
+        .copy-btn:hover {
+            background: #5a6268;
+        }
+
+        .copy-btn.copied {
+            background: #28a745;
+        }
+
+        /* Loading indicator */
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 20px;
+            justify-content: center;
+            color: #888;
+            font-size: 13px;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #e0e0e0;
+            border-top-color: #4a6fa5;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Status indicator */
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #888;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4caf50;
+        }
+
+        .status-dot.updating {
+            background: #ff9800;
+            animation: pulse 1s ease infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #bbb;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #333;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+    </style>
+<script>
+        window.TRAJECTORY_CONFIG = {
+            staticMode: true,
+            isCustomDir: true,
+            directoryName: "conversations"
+        };
+        </script>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>OpenHands Trajectories</h1>
+                <p>Agent conversation visualizer</p>
+                <div class="status-indicator" style="margin-top: 12px;">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">Ready</span>
+                </div>
+                <button class="stats-btn" id="statsBtn">📊 Model Statistics</button>
+            </div>
+            <div class="sidebar-content" id="trajectoryList">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <span>Loading trajectories...</span>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="main-header">
+                <div class="main-header-content">
+                    <h2 id="mainTitle">Select a trajectory</h2>
+                    <div class="header-actions" id="headerActions" style="display: none;">
+                        <button class="btn btn-secondary" id="expandAllBtn">Expand Events</button>
+                        <button class="btn btn-secondary" id="collapseAllBtn">Collapse All</button>
+                    </div>
+                </div>
+            </div>
+            <div class="main-body" id="mainBody">
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <p>Select a trajectory from the sidebar to view its events</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        console.log('Script starting...');
+        // State
+        let trajectories = [];
+        let currentTrajectory = null;
+        let currentEvents = [];
+        let expandedEvents = new Set();
+        let expandedContents = new Set(); // Track which content sections are fully expanded
+        let expandMode = 'collapsed'; // 'collapsed', 'events', or 'everything'
+        let refreshInterval = null;
+
+        // DOM Elements
+        const trajectoryList = document.getElementById('trajectoryList');
+        const mainTitle = document.getElementById('mainTitle');
+        const mainBody = document.getElementById('mainBody');
+        const headerActions = document.getElementById('headerActions');
+        const expandAllBtn = document.getElementById('expandAllBtn');
+        const collapseAllBtn = document.getElementById('collapseAllBtn');
+        const statsBtn = document.getElementById('statsBtn');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        // Stats overlay elements - accessed in init() after DOM is ready
+
+        // Event kind icons and labels
+        const eventConfig = {
+        'SystemPromptEvent': { icon: '⚙️', label: 'System',      class: 'system' },
+        'MessageEvent': (ev) => {
+            const role = ev.llm_message?.role;
+            if (role === 'assistant') {
+            return { icon: '🤖', label: 'Agent', class: 'agent' };
+            }
+            // default to "user" for anything else (including missing role)
+            return { icon: '👤', label: 'User', class: 'user' };
+        },
+        'ActionEvent': { icon: '🔧', label: 'Action', class: 'action' }, // new class
+        'ObservationEvent': { icon: '👁️', label: 'Observation', class: 'observation' },
+        'ConversationErrorEvent': { icon: '⚠️', label: 'Error', class: 'error' },
+        'CondensationRequest': { icon: '🗜️', label: 'Condensation request', class: 'condensation' },
+        'Condensation': { icon: '🗜️', label: 'Condensation', class: 'condensation' }
+        };
+
+        function getEventConfig(evt) {
+            const cfg = eventConfig[evt.kind];
+            if (!cfg) {
+                // Default config for unknown event types
+                return { icon: '❓', label: evt.kind || 'Unknown', class: 'unknown' };
+            }
+            return typeof cfg === 'function' ? cfg(evt) : cfg;
+        }
+
+        // Fetch trajectories from server
+        async function fetchStatus() {
+            try {
+                // Static mode: use embedded config
+                return Promise.resolve({
+                    status: 'ok',
+                    staticMode: true,
+                    is_custom_dir: window.TRAJECTORY_CONFIG.isCustomDir,
+                    directory_name: window.TRAJECTORY_CONFIG.directoryName
+                });
+                if (!response.ok) return;
+                const status = await response.json();
+                if (status.is_custom_dir) {
+                    document.querySelector('.sidebar').classList.add('custom-dir');
+                    document.querySelector('.sidebar-header h1').textContent = `${status.directory_name} Trajectories`;
+                }
+            } catch (error) {
+                console.error('Error fetching status:', error);
+            }
+        }
+
+        async function fetchTrajectories() {
+            try {
+                const response = await fetch('data/trajectories.json');
+                if (!response.ok) throw new Error('Failed to fetch trajectories');
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching trajectories:', error);
+                return [];
+            }
+        }
+
+        // Fetch events for a trajectory
+        async function fetchEvents(trajectoryId) {
+            try {
+                const response = await fetch(`data/${trajectoryId}/events.json`);
+                if (!response.ok) throw new Error('Failed to fetch events');
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching events:', error);
+                return [];
+            }
+        }
+
+        // Render trajectory list
+        function renderTrajectoryList() {
+            console.log('renderTrajectoryList called, trajectories:', trajectories.length);
+            if (trajectories.length === 0) {
+                console.log('No trajectories, showing empty state');
+                trajectoryList.innerHTML = `
+                    <div class="empty-state" style="padding: 40px 20px;">
+                        <p>No trajectories found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            trajectoryList.innerHTML = trajectories.map(t => {
+                const fullId = t.id || 'Unknown';
+                // Model is stored in agent.llm.model (from base_state.json structure)
+                const modelName = t.agent?.llm?.model ||
+                                 t.agent?.model ||
+                                 t.model ||
+                                 'Unknown Model';
+                // Build title with event count and token breakdown
+                const eventCount = t.eventCount || 0;
+                const promptTokens = t.promptTokens || 0;
+                const completionTokens = t.completionTokens || 0;
+                const reasoningTokens = t.reasoningTokens || 0;
+                const cacheReadTokens = t.cacheReadTokens || 0;
+                const cachePct = t.cachePct || 0;
+
+                // Format tokens in K/M format
+                function fmtTokens(n) {
+                    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+                    if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+                    return n.toString();
+                }
+
+                // Build token breakdown: ⬆️ x ⬇️ y cache z%
+                // ⬆️ = prompt tokens (input)
+                // ⬇️ = completion tokens (output)
+                let tokenStr = `⬆️ ${fmtTokens(promptTokens)}  ⬇️ ${fmtTokens(completionTokens)}  cache ${cachePct}%`;
+
+                // Get average agent turn time
+                const avgAgentTurnTime = t.avgAgentTurnTime || 0;
+                let avgTimeStr = avgAgentTurnTime > 0 ? `, ⏱️ ${avgAgentTurnTime}s avg turn` : '';
+
+                // Get total conversation time
+                const totalConversationTime = t.totalConversationTime || 0;
+                let totalTimeStr = totalConversationTime > 0 ? `, ⏱️ ${formatDurationHMS(totalConversationTime)} total` : '';
+
+                let titleExtra = `${eventCount} events, ${tokenStr}${avgTimeStr}${totalTimeStr}`;
+
+                return `
+                <div class="trajectory-item ${currentTrajectory?.id === t.id ? 'active' : ''}"
+                     data-id="${t.id}">
+                    <div class="trajectory-title">${fullId} - ${modelName} (${titleExtra})</div>
+                    <div class="trajectory-meta">
+                        <span>📅 ${formatDate(t.created)}</span>
+                    </div>
+                </div>
+            `}).join('');
+
+            // Add click handlers
+            trajectoryList.querySelectorAll('.trajectory-item').forEach(item => {
+                item.addEventListener('click', () => selectTrajectory(item.dataset.id));
+            });
+        }
+
+        // Format date
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diff = now - date;
+
+            if (diff < 60000) return 'Just now';
+            if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+            if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+            if (diff < 604800000) return `${Math.floor(diff / 86400000)}d ago`;
+
+            return date.toLocaleDateString();
+        }
+
+        // Select trajectory
+        async function selectTrajectory(id) {
+            currentTrajectory = trajectories.find(t => t.id === id);
+            expandedEvents.clear();
+
+            // Update URL hash for shareable link
+            window.location.hash = id;
+
+            // Update UI
+            renderTrajectoryList();
+            const fullId = currentTrajectory?.id || 'Unknown';
+            // Model is stored in agent.llm.model (from base_state.json structure)
+            const modelName = currentTrajectory?.agent?.llm?.model ||
+                             currentTrajectory?.agent?.model ||
+                             currentTrajectory?.model ||
+                             'Unknown Model';
+            // Build title with event count and token breakdown
+            const eventCount = currentTrajectory?.eventCount || 0;
+            const promptTokens = currentTrajectory?.promptTokens || 0;
+            const completionTokens = currentTrajectory?.completionTokens || 0;
+            const reasoningTokens = currentTrajectory?.reasoningTokens || 0;
+            const cachePct = currentTrajectory?.cachePct || 0;
+
+            // Format tokens in K/M format
+            function fmtTokens(n) {
+                if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+                if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+                return n.toString();
+            }
+
+            // Build token breakdown: ⬆️ x ⬇️ y cache z%
+            // ⬆️ = prompt tokens (input)
+            // ⬇️ = completion tokens (output)
+            let tokenStr = `⬆️ ${fmtTokens(promptTokens)}  ⬇️ ${fmtTokens(completionTokens)}  cache ${cachePct}%`;
+
+            // Get average agent turn time
+            const avgAgentTurnTime = currentTrajectory?.avgAgentTurnTime || 0;
+            let avgTimeStr = avgAgentTurnTime > 0 ? `, ⏱️ ${avgAgentTurnTime}s avg turn` : '';
+            const totalConversationTime = currentTrajectory?.totalConversationTime || 0;
+            let totalTimeStr = totalConversationTime > 0 ? `, ⏱️ ${formatDurationHMS(totalConversationTime)} total` : '';
+
+            let titleExtra = `${eventCount} events, ${tokenStr}${avgTimeStr}${totalTimeStr}`;
+            mainTitle.textContent = `${fullId} - ${modelName} (${titleExtra})`;
+            headerActions.style.display = 'flex';
+
+            // Show loading
+            mainBody.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <span>Loading events...</span>
+                </div>
+            `;
+
+            // Fetch and render events
+            currentEvents = await fetchEvents(id);
+            renderEvents();
+        }
+
+        // Render events
+        function renderEvents() {
+            if (currentEvents.length === 0) {
+                mainBody.innerHTML = `
+                    <div class="empty-state">
+                        <p>No events in this trajectory</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Save scroll positions of pre elements before re-rendering
+            const preElements = mainBody.querySelectorAll('pre');
+            const scrollPositions = new Map();
+            preElements.forEach((pre, index) => {
+                scrollPositions.set(index, { scrollLeft: pre.scrollLeft, scrollTop: pre.scrollTop });
+            });
+
+            try {
+                const eventItems = [];
+                for (let i = 0; i < currentEvents.length; i++) {
+                    try {
+                        eventItems.push(renderEventItem(currentEvents[i], i));
+                    } catch (error) {
+                        console.error(`Error rendering event ${i}:`, error);
+                        // Create a simple error event item
+                        eventItems.push(`
+                            <div class="event-item" style="border-color: #dc3545;">
+                                <div class="event-header">
+                                    <div class="event-icon" style="background: #dc3545; color: white;">⚠️</div>
+                                    <div class="event-info">
+                                        <div class="event-kind">Error rendering event ${i}</div>
+                                        <div class="event-meta" style="color: #dc3545;">${error.message}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+                    }
+                }
+
+                mainBody.innerHTML = `
+                    <div class="event-list">
+                        ${eventItems.join('')}
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Critical error in renderEvents:', error);
+                mainBody.innerHTML = `
+                    <div class="empty-state">
+                        <p>Error rendering events: ${error.message}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Restore scroll positions after re-rendering
+            const newPreElements = mainBody.querySelectorAll('pre');
+            newPreElements.forEach((pre, index) => {
+                const pos = scrollPositions.get(index);
+                if (pos) {
+                    pre.scrollLeft = pos.scrollLeft;
+                    pre.scrollTop = pos.scrollTop;
+                }
+            });
+
+            // Add click handlers
+            mainBody.querySelectorAll('.event-header').forEach((header, index) => {
+                header.addEventListener('click', () => toggleEvent(index));
+            });
+        }
+
+        // Get event summary info for collapsed view
+        function getEventSummary(event) {
+            const parts = [];
+
+            // Status (success/error)
+            if (event.observation?.is_error !== undefined) {
+                parts.push(event.observation.is_error ? '❌ Error' : '✅ Success');
+            } else if (event.action?.security_risk) {
+                parts.push(`⚠️ ${event.action.security_risk}`);
+            }
+
+            // Path (for file operations)
+            let path = null;
+            if (event.action?.command === 'view' || event.action?.command === 'create' ||
+                event.action?.command === 'str_replace' || event.action?.command === 'insert') {
+                path = event.action?.path;
+            } else if (event.observation?.command === 'view') {
+                path = event.observation?.path;
+            }
+
+            if (path) {
+                // Truncate long paths
+                const maxLen = 60;
+                const displayPath = path.length > maxLen ? '...' + path.substring(path.length - maxLen) : path;
+                parts.push(`📁 ${displayPath}`);
+            }
+
+            return parts.length > 0 ? `<span style="color: #888; margin-left: 8px;">${parts.join(' • ')}</span>` : '';
+        }
+
+        // Format duration in seconds with 1 decimal place
+        function formatDuration(ms) {
+            const seconds = (ms / 1000).toFixed(1);
+            return `${seconds}s`;
+        }
+
+        // Format duration in HMS format (e.g., "1h 23m 45s" or "12m 30s" if under 1 hour)
+        function formatDurationHMS(totalSeconds) {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = Math.floor(totalSeconds % 60);
+
+            if (hours > 0) {
+                return `${hours}h ${minutes}m ${seconds}s`;
+            } else {
+                return `${minutes}m ${seconds}s`;
+            }
+        }
+
+        // Format tokens in K/M format (global utility)
+        function formatTokens(n) {
+            if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+            if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+            return n.toString();
+        }
+
+        // Render single event item
+        function renderEventItem(event, index) {
+            const config = getEventConfig(event);
+            const isExpanded = expandedEvents.has(index);
+            const summary = getEventSummary(event);
+            const eventNumber = index;
+
+            // Calculate duration from previous event to this event
+            // First event has no duration
+            let duration = '';
+            if (index > 0) {
+                const prevEvent = currentEvents[index - 1];
+                if (prevEvent && event.timestamp && prevEvent.timestamp) {
+                    const currentTime = new Date(event.timestamp).getTime();
+                    const prevTime = new Date(prevEvent.timestamp).getTime();
+                    const durationMs = currentTime - prevTime;
+                    if (durationMs >= 0) {
+                        duration = `<span class="event-duration">⏱️ ${formatDuration(durationMs)}</span>`;
+                    }
+                }
+            }
+
+            return `
+                <div class="event-item">
+                    <div class="event-header">
+                        <div class="event-icon ${config.class}">${config.icon}</div>
+                        <div class="event-info">
+                            <div class="event-kind ${config.class}">
+                                <span style="color: #888; font-weight: normal;">#${eventNumber}</span>
+                                ${event.kind === 'ActionEvent' && event.summary ?
+                                    `ACTION - ${event.summary}` :
+                                    event.kind === 'ObservationEvent' && event.tool_name ?
+                                    `OBSERVATION - ${event.tool_name}` :
+                                    config.label.toUpperCase()}
+                            </div>
+                            <div class="event-meta">
+                                ${duration}
+                                ${summary}
+                            </div>
+                        </div>
+                        <div class="event-toggle ${isExpanded ? 'expanded' : ''}">▶</div>
+                    </div>
+                    <div class="event-content ${isExpanded ? 'expanded' : ''}">
+                        ${renderEventDetails(event, index)}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Format timestamp with wallclock time
+        function formatTimestamp(timestamp) {
+            const date = new Date(timestamp);
+            const timeStr = date.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+            const dateStr = date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric'
+            });
+            return `<span class="timestamp-time">${timeStr}</span> <span class="timestamp-date">${dateStr}</span>`;
+        }
+
+        // Truncate text to first and last N lines
+        function truncateText(text, firstLines = 3, lastLines = 3) {
+            if (!text) return { text: '', truncated: false };
+
+            const lines = text.split('\n');
+            if (lines.length <= firstLines + lastLines + 1) {
+                return { text, truncated: false };
+            }
+
+            const first = lines.slice(0, firstLines).join('\n');
+            const last = lines.slice(-lastLines).join('\n');
+            return {
+                text: `${first}\n...\n${last}`,
+                truncated: true,
+                fullLines: lines.length
+            };
+        }
+
+        // Render event details
+        function renderEventDetails(event, eventIndex) {
+            const config = getEventConfig(event);
+            const details = [];
+
+            // Common fields
+            if (event.id) {
+                details.push({
+                    title: 'Event ID',
+                    content: event.id,
+                    expandable: false
+                });
+            }
+
+            // Kind-specific details
+            switch (event.kind) {
+                case 'SystemPromptEvent':
+                    if (event.system_prompt?.text) {
+                        details.push({
+                            title: 'System Prompt',
+                            content: event.system_prompt.text,
+                            expandable: true
+                        });
+                    }
+                    break;
+
+                case 'MessageEvent':
+                    if (event.llm_message?.content) {
+                        const content = event.llm_message.content;
+                        if (Array.isArray(content)) {
+                            content.forEach((c, i) => {
+                                if (c.text) {
+                                    details.push({
+                                        title: `Message ${i + 1}`,
+                                        content: c.text,
+                                        expandable: true
+                                    });
+                                }
+                            });
+                        } else if (typeof content === 'string') {
+                            details.push({
+                                title: 'Message',
+                                content: content,
+                                expandable: true
+                            });
+                        }
+                    }
+                    break;
+
+                case 'ActionEvent':
+                    // Add thought if available and not empty
+                    if (event.thought) {
+                        let thoughtText = '';
+                        if (Array.isArray(event.thought)) {
+                            thoughtText = event.thought.map(t => typeof t === 'string' ? t : (t && typeof t.text === 'string' ? t.text : '')).join('\n');
+                        } else if (typeof event.thought === 'object' && event.thought !== null && typeof event.thought.text === 'string') {
+                            thoughtText = event.thought.text;
+                        } else if (typeof event.thought === 'string') {
+                            thoughtText = event.thought;
+                        }
+
+                        if (thoughtText.trim()) {
+                            details.push({
+                                title: 'Thought',
+                                content: thoughtText,
+                                expandable: true
+                            });
+                        }
+                    }
+
+                    break;
+
+                case 'ObservationEvent':
+                    if (event.observation) {
+                        const obs = event.observation;
+                        if (obs.content) {
+                            const contentText = Array.isArray(obs.content)
+                                ? obs.content.map(c => typeof c === 'string' ? c : (c && typeof c.text === 'string' ? c.text : '')).join('\n')
+                                : (typeof obs.content === 'string' ? obs.content : (obs.content && typeof obs.content.text === 'string' ? obs.content.text : ''));
+                            if (contentText.trim()) {
+                                details.push({
+                                    title: 'Observation',
+                                    content: contentText,
+                                    expandable: true
+                                });
+                            }
+                        }
+                        // Note: Status is shown in header, so not showing it here
+                        // Note: Tool name is shown in header, so not showing it here
+                    }
+                    break;
+            }
+
+            // Add raw JSON option
+            details.push({
+                title: 'Raw JSON',
+                content: JSON.stringify(event, null, 2),
+                expandable: true
+            });
+
+            return details.map((d, detailIndex) => {
+                const contentKey = `${eventIndex}-${detailIndex}`;
+                const isExpanded = expandedContents.has(contentKey);
+                const shouldTruncate = d.expandable && expandMode === 'events' && !isExpanded;
+
+                let displayContent = d.content;
+                let expandButton = '';
+                let wasTruncated = false;
+
+                if (shouldTruncate && typeof d.content === 'string') {
+                    const truncated = truncateText(d.content);
+                    displayContent = truncated.text;
+                    wasTruncated = truncated.truncated;
+                    if (wasTruncated) {
+                        expandButton = `<button class="expand-content-btn" onclick="toggleContent(${eventIndex}, ${detailIndex})">Show more</button>`;
+                    }
+                } else if (isExpanded && d.expandable && typeof d.content === 'string') {
+                    const truncated = truncateText(d.content);
+                    wasTruncated = truncated.truncated;
+                    if (wasTruncated) {
+                        expandButton = `<button class="expand-content-btn" onclick="toggleContent(${eventIndex}, ${detailIndex})">Show less</button>`;
+                    }
+                }
+
+                // Format content as HTML
+                let formattedContent;
+                if (d.title === 'Raw JSON') {
+                    formattedContent = `<pre>${escapeHtml(displayContent)}</pre>`;
+                } else if (d.title === 'Action') {
+                    formattedContent = `<pre>${escapeHtml(displayContent)}</pre>`;
+                } else if (d.title === 'Thought' || d.title === 'Observation' || d.title === 'System Prompt' || d.title.startsWith('Message')) {
+                    formattedContent = `<pre>${escapeHtml(displayContent)}</pre>`;
+                } else {
+                    formattedContent = `<code>${escapeHtml(displayContent)}</code>`;
+                }
+
+                // Add copy button for text content
+                const copyButton = `<button class="copy-btn" onclick="copyToClipboard(${eventIndex}, ${detailIndex})" title="Copy to clipboard">📋 Copy</button>`;
+
+                return `
+                    <div class="event-detail">
+                        <div class="event-detail-header">
+                            <div class="event-detail-title">${d.title}</div>
+                            <div>
+                                ${expandButton}
+                                ${copyButton}
+                            </div>
+                        </div>
+                        <div class="event-detail-content">${formattedContent}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Toggle event expansion
+        function toggleEvent(index) {
+            if (expandedEvents.has(index)) {
+                expandedEvents.delete(index);
+            } else {
+                expandedEvents.add(index);
+            }
+            renderEvents();
+        }
+
+        // Toggle content expansion for a specific detail
+        function toggleContent(eventIndex, detailIndex) {
+            const key = `${eventIndex}-${detailIndex}`;
+            if (expandedContents.has(key)) {
+                expandedContents.delete(key);
+            } else {
+                expandedContents.add(key);
+            }
+            renderEvents();
+        }
+
+        // Copy content to clipboard
+        async function copyToClipboard(eventIndex, detailIndex) {
+            const event = currentEvents[eventIndex];
+            if (!event) return;
+
+            // Get the content from the event
+            let content = '';
+            const details = [];
+
+            // Build details array (same logic as renderEventDetails)
+            if (event.id) {
+                details.push({ title: 'Event ID', content: event.id });
+            }
+
+            switch (event.kind) {
+                case 'SystemPromptEvent':
+                    if (event.system_prompt?.text) {
+                        details.push({ title: 'System Prompt', content: event.system_prompt.text });
+                    }
+                    break;
+                case 'MessageEvent':
+                    if (event.llm_message?.content) {
+                        const content = event.llm_message.content;
+                        if (Array.isArray(content)) {
+                            content.forEach((c, i) => {
+                                if (c.text) {
+                                    details.push({ title: `Message ${i + 1}`, content: c.text });
+                                }
+                            });
+                        } else if (typeof content === 'string') {
+                            details.push({ title: 'Message', content: content });
+                        }
+                    }
+                    break;
+                case 'ActionEvent':
+                    if (event.thought) {
+                        let thoughtText = '';
+                        if (Array.isArray(event.thought)) {
+                            thoughtText = event.thought.map(t => typeof t === 'string' ? t : (t && typeof t.text === 'string' ? t.text : '')).join('\n');
+                        } else if (typeof event.thought === 'object' && event.thought !== null && typeof event.thought.text === 'string') {
+                            thoughtText = event.thought.text;
+                        } else if (typeof event.thought === 'string') {
+                            thoughtText = event.thought;
+                        }
+                        if (thoughtText.trim()) {
+                            details.push({ title: 'Thought', content: thoughtText });
+                        }
+                    }
+                    if (event.action) {
+                        details.push({ title: 'Action', content: JSON.stringify(event.action, null, 2) });
+                    }
+                    if (event.tool_name) {
+                        details.push({ title: 'Tool', content: event.tool_name });
+                    }
+                    if (event.security_risk) {
+                        details.push({ title: 'Security Risk', content: event.security_risk });
+                    }
+                    break;
+                case 'ObservationEvent':
+                    if (event.observation) {
+                        const obs = event.observation;
+                        if (obs.content) {
+                            const contentText = Array.isArray(obs.content)
+                                ? obs.content.map(c => typeof c === 'string' ? c : (c && typeof c.text === 'string' ? c.text : '')).join('\n')
+                                : (typeof obs.content === 'string' ? obs.content : (obs.content && typeof obs.content.text === 'string' ? obs.content.text : ''));
+                            if (contentText.trim()) {
+                                details.push({ title: 'Observation', content: contentText });
+                            }
+                        }
+                    }
+                    if (event.tool_name) {
+                        details.push({ title: 'Tool', content: event.tool_name });
+                    }
+                    break;
+            }
+            details.push({ title: 'Raw JSON', content: JSON.stringify(event, null, 2) });
+
+            const detail = details[detailIndex];
+            if (detail && detail.content) {
+                content = typeof detail.content === 'string' ? detail.content : String(detail.content);
+            }
+
+            try {
+                await navigator.clipboard.writeText(content);
+                // Show feedback
+                const btn = document.activeElement;
+                if (btn && btn.classList.contains('copy-btn')) {
+                    const originalText = btn.textContent;
+                    btn.textContent = '✓ Copied!';
+                    btn.classList.add('copied');
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.classList.remove('copied');
+                    }, 2000);
+                }
+            } catch (err) {
+                console.error('Failed to copy:', err);
+            }
+        }
+
+        function collapseAll() {
+            expandedEvents.clear();
+            expandedContents.clear();
+            expandMode = 'collapsed';
+            expandAllBtn.textContent = 'Expand Events';
+            renderEvents();
+        }
+
+        // Cycle through expand states: collapsed -> events (limited) -> everything (full) -> events (limited) -> ...
+        function expandAll() {
+            if (expandMode === 'collapsed') {
+                // First click: expand events to limited representation
+                expandMode = 'events';
+                expandAllBtn.textContent = 'Expand Everything';
+                // Expand all events but keep content truncated (expandMode='events' handles this)
+                currentEvents.forEach((_, index) => {
+                    expandedEvents.add(index);
+                });
+            } else if (expandMode === 'events') {
+                // Second click: expand everything to full representation
+                expandMode = 'everything';
+                expandAllBtn.textContent = 'Expand Events';
+                // When expandMode='everything', renderEventDetails shows all content fully
+                // No need to track individual expansions
+            } else {
+                // Third click: back to limited representation (but events still expanded)
+                expandMode = 'events';
+                expandAllBtn.textContent = 'Expand Everything';
+                // Clear individual expansions to show truncated content again
+                expandedContents.clear();
+            }
+            renderEvents();
+        }
+
+        // Refresh current trajectory
+        async function refresh() {
+            if (!currentTrajectory) return;
+
+            // Skip refresh if user is selecting text in the main body
+            const selection = window.getSelection();
+            if (selection && !selection.isCollapsed && mainBody.contains(selection.anchorNode)) {
+                return;
+            }
+
+            statusDot.classList.add('updating');
+            statusText.textContent = 'Updating...';
+
+            const newEvents = await fetchEvents(currentTrajectory.id);
+
+            // Only re-render if the data has actually changed
+            if (JSON.stringify(newEvents) !== JSON.stringify(currentEvents)) {
+                currentEvents = newEvents;
+                renderEvents();
+            }
+
+            statusDot.classList.remove('updating');
+            statusText.textContent = 'Ready';
+        }
+
+        // Start auto-refresh
+        function startAutoRefresh() {
+            refreshInterval = setInterval(() => {
+                if (currentTrajectory) {
+                    refresh();
+                }
+            }, 3000); // Refresh every 3 seconds
+        }
+
+        // Calculate and display model statistics
+        function calculateModelStats() {
+            const modelStats = {};
+
+            // Filter out trajectories with no agent events (avgAgentTurnTime === 0)
+            const validTrajectories = trajectories.filter(t => t.avgAgentTurnTime > 0);
+
+            validTrajectories.forEach(t => {
+                const model = t.model || 'Unknown';
+                const avgTurnTime = t.avgAgentTurnTime;
+                const promptTokens = t.promptTokens || 0;
+                const completionTokens = t.completionTokens || 0;
+
+                if (!modelStats[model]) {
+                    modelStats[model] = {
+                        conversations: 0,
+                        totalAvgTurnTime: 0,
+                        maxTurnTime: 0,
+                        totalPromptTokens: 0,
+                        totalCompletionTokens: 0
+                    };
+                }
+
+                modelStats[model].conversations++;
+                modelStats[model].totalAvgTurnTime += avgTurnTime;
+                modelStats[model].totalPromptTokens += promptTokens;
+                modelStats[model].totalCompletionTokens += completionTokens;
+                if (avgTurnTime > modelStats[model].maxTurnTime) {
+                    modelStats[model].maxTurnTime = avgTurnTime;
+                }
+            });
+
+            // Convert to array and calculate averages
+            return Object.entries(modelStats).map(([model, stats]) => ({
+                model,
+                conversations: stats.conversations,
+                avgTurnDuration: stats.totalAvgTurnTime / stats.conversations,
+                maxTurnDuration: stats.maxTurnTime,
+                totalPromptTokens: stats.totalPromptTokens,
+                totalCompletionTokens: stats.totalCompletionTokens
+            })).sort((a, b) => b.conversations - a.conversations); // Sort by conversation count
+        }
+
+        function showStatsOverlay() {
+            console.log('showStatsOverlay called');
+            const statsOverlay = document.getElementById('statsOverlay');
+            const statsTableBody = document.getElementById('statsTableBody');
+
+            console.log('statsOverlay element:', statsOverlay);
+            console.log('statsTableBody element:', statsTableBody);
+
+            if (!statsOverlay || !statsTableBody) {
+                console.error('Stats overlay elements not found!');
+                return;
+            }
+
+            const stats = calculateModelStats();
+            console.log('Calculated stats:', stats);
+
+            if (stats.length === 0) {
+                statsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 24px; color: #888;">No data available</td></tr>';
+            } else {
+                statsTableBody.innerHTML = stats.map(s => `
+                    <tr>
+                        <td class="model-name">${escapeHtml(s.model)}</td>
+                        <td class="number-cell">${s.conversations}</td>
+                        <td class="number-cell">${s.avgTurnDuration.toFixed(1)}s</td>
+                        <td class="number-cell">${s.maxTurnDuration.toFixed(1)}s</td>
+                        <td class="number-cell">${formatTokens(s.totalPromptTokens)}</td>
+                        <td class="number-cell">${formatTokens(s.totalCompletionTokens)}</td>
+                    </tr>
+                `).join('');
+            }
+
+            statsOverlay.classList.add('active');
+            console.log('Added active class to overlay');
+        }
+
+        function hideStatsOverlay() {
+            const statsOverlay = document.getElementById('statsOverlay');
+            statsOverlay.classList.remove('active');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize
+        async function init() {
+
+        // Check if running from file:// protocol
+        if (window.location.protocol === 'file:') {
+            console.error('ERROR: File protocol detected. Cannot load data files.');
+            document.body.innerHTML = `
+                <div style="padding: 40px; font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h1 style="color: #e76f51;">⚠️ Cannot Load Trajectories</h1>
+                    <p>The Trajectory Visualizer cannot run directly from a file:// URL due to browser security restrictions.</p>
+                    <h3>Solution: Use a Local Server</h3>
+                    <p>Run one of these commands in the project directory:</p>
+                    <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto;">
+# Option 1: Use the provided serve script
+./serve
+
+# Option 2: Use Python directly
+cd dist && python3 -m http.server 8050
+
+# Option 3: Use npx serve
+npx serve dist -p 8050</pre>
+                    <p>Then open <code>http://localhost:8050</code> in your browser.</p>
+                </div>
+            `;
+            throw new Error('File protocol not supported. Please use a local server.');
+        }
+        
+            // Set up button handlers
+            expandAllBtn.addEventListener('click', expandAll);
+            collapseAllBtn.addEventListener('click', collapseAll);
+
+            // Stats button
+            if (statsBtn) {
+                console.log('statsBtn found, adding click listener');
+                statsBtn.addEventListener('click', () => {
+                    console.log('Stats button clicked!');
+                    showStatsOverlay();
+                });
+            } else {
+                console.error('statsBtn not found!');
+            }
+
+            // Stats overlay elements may not exist yet (they're defined after the script)
+            // Set up their handlers after DOM is fully parsed
+            document.addEventListener('DOMContentLoaded', () => {
+                console.log('DOMContentLoaded - setting up stats overlay handlers');
+                const statsOverlay = document.getElementById('statsOverlay');
+                const closeStatsBtn = document.getElementById('closeStatsBtn');
+
+                console.log('statsOverlay found:', !!statsOverlay);
+                console.log('closeStatsBtn found:', !!closeStatsBtn);
+
+                if (closeStatsBtn) {
+                    closeStatsBtn.addEventListener('click', hideStatsOverlay);
+                }
+
+                // Close overlay when clicking outside
+                if (statsOverlay) {
+                    statsOverlay.addEventListener('click', (e) => {
+                        if (e.target === statsOverlay) {
+                            hideStatsOverlay();
+                        }
+                    });
+                }
+            });
+
+            // Fetch initial data
+            await fetchStatus();
+            trajectories = await fetchTrajectories();
+            console.log('Fetched trajectories:', trajectories.length, trajectories);
+            renderTrajectoryList();
+
+            // Check for conversation ID in URL hash and auto-select if present
+            const hashId = window.location.hash.slice(1); // Remove the #
+            if (hashId) {
+                const trajectory = trajectories.find(t => t.id === hashId);
+                if (trajectory) {
+                    console.log('Auto-selecting conversation from URL:', hashId);
+                    await selectTrajectory(hashId);
+                } else {
+                    console.warn('Conversation ID from URL not found:', hashId);
+                }
+            }
+
+            // Listen for hash changes (browser back/forward buttons)
+            window.addEventListener('hashchange', async () => {
+                const newHashId = window.location.hash.slice(1);
+                if (newHashId) {
+                    const trajectory = trajectories.find(t => t.id === newHashId);
+                    if (trajectory && currentTrajectory?.id !== newHashId) {
+                        console.log('Hash changed, selecting conversation:', newHashId);
+                        await selectTrajectory(newHashId);
+                    }
+                } else {
+                    // Hash cleared - deselect current conversation
+                    console.log('Hash cleared, deselecting conversation');
+                    currentTrajectory = null;
+                    currentEvents = [];
+                    expandedEvents.clear();
+                    renderTrajectoryList();
+                    mainTitle.textContent = 'Select a trajectory';
+                    headerActions.style.display = 'none';
+                    mainBody.innerHTML = `
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <p>Select a trajectory from the sidebar to view details</p>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        // Start the app
+        init().catch(err => console.error('Init failed:', err));
+    </script>
+
+    <!-- Model Statistics Overlay -->
+    <div class="overlay" id="statsOverlay">
+        <div class="overlay-content">
+            <div class="overlay-header">
+                <h2>📊 Model Statistics</h2>
+                <button class="close-btn" id="closeStatsBtn">Close</button>
+            </div>
+            <table class="stats-table" id="statsTable">
+                <thead>
+                    <tr>
+                        <th>Model Name</th>
+                        <th>Conversations</th>
+                        <th>Avg Turn Duration</th>
+                        <th>Max Turn Duration</th>
+                        <th>Input Tokens</th>
+                        <th>Completion tokens</th>
+                    </tr>
+                </thead>
+                <tbody id="statsTableBody">
+                    <!-- Stats will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

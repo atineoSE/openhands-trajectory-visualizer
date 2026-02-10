@@ -250,26 +250,38 @@ def get_conversations_dir(input_path: Path = None) -> tuple[Path, bool]:
     return resolved_path, is_custom
 
 
+def get_source_mtime(trajectory_path: Path) -> float:
+    """Get the latest modification time across all source files in a trajectory."""
+    mtime = trajectory_path.stat().st_mtime
+    base_state = trajectory_path / "base_state.json"
+    if base_state.exists():
+        mtime = max(mtime, base_state.stat().st_mtime)
+    events_dir = trajectory_path / "events"
+    if events_dir.exists():
+        for f in events_dir.glob("event-*.json"):
+            mtime = max(mtime, f.stat().st_mtime)
+    return mtime
+
+
 def build_static_site(
     conversations_dir: Path, output_dir: Path, is_custom_dir: bool = False
 ):
-    """Build the static site."""
+    """Build the static site (incremental — only processes changed trajectories)."""
     print("🔨 Building static site...")
     print(f"   Source: {conversations_dir}")
     print(f"   Output: {output_dir}")
     print(f"   Custom dir: {is_custom_dir}")
 
-    # Clean and create output directory
-    if output_dir.exists():
-        shutil.rmtree(output_dir)
-    output_dir.mkdir(parents=True)
-
-    # Create data directory
+    # Ensure output and data directories exist
+    output_dir.mkdir(parents=True, exist_ok=True)
     data_dir = output_dir / "data"
-    data_dir.mkdir()
+    data_dir.mkdir(exist_ok=True)
 
     # Collect all trajectories
     trajectories = []
+    source_ids = set()
+    rebuilt_count = 0
+    skipped_count = 0
 
     if not conversations_dir.exists():
         print(f"⚠️  Warning: Conversations directory not found: {conversations_dir}")
@@ -278,21 +290,32 @@ def build_static_site(
             conversations_dir.iterdir(), key=lambda x: x.stat().st_mtime, reverse=True
         ):
             # Only process directories that look like trajectory IDs (32 hex chars)
-            # and contain a base_state.json file
             if (
                 entry.is_dir()
                 and len(entry.name) == 32
                 and all(c in "0123456789abcdef" for c in entry.name.lower())
             ):
-                print(f"   Processing: {entry.name}")
+                source_ids.add(entry.name)
 
-                # Compute metadata
+                # Compute metadata (always needed for trajectories.json)
                 metadata = compute_trajectory_metadata(entry)
                 trajectories.append(metadata)
 
-                # Create trajectory directory in output
+                # Check if output is already up to date
                 traj_output_dir = data_dir / entry.name
-                traj_output_dir.mkdir()
+                events_output = traj_output_dir / "events.json"
+
+                if events_output.exists():
+                    source_mtime = get_source_mtime(entry)
+                    output_mtime = events_output.stat().st_mtime
+                    if source_mtime <= output_mtime:
+                        skipped_count += 1
+                        continue
+
+                # Source is newer or output doesn't exist — rebuild this trajectory
+                print(f"   Processing: {entry.name}")
+                rebuilt_count += 1
+                traj_output_dir.mkdir(exist_ok=True)
 
                 # Build and save trajectory detail
                 trajectory_detail = build_trajectory_detail(entry)
@@ -303,6 +326,16 @@ def build_static_site(
                 events = build_events(entry)
                 with open(traj_output_dir / "events.json", "w") as f:
                     json.dump(events, f, indent=2, default=str)
+
+    # Remove output directories for trajectories that no longer exist in source
+    removed_count = 0
+    for existing_output in data_dir.iterdir():
+        if existing_output.is_dir() and existing_output.name not in source_ids:
+            print(f"   Removing stale: {existing_output.name}")
+            shutil.rmtree(existing_output)
+            removed_count += 1
+
+    print(f"\n   Rebuilt: {rebuilt_count}, Skipped (unchanged): {skipped_count}, Removed: {removed_count}")
 
     # Save trajectories list
     with open(data_dir / "trajectories.json", "w") as f:

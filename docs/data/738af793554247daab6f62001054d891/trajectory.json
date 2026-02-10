@@ -1,0 +1,1490 @@
+{
+  "id": "738af793554247daab6f62001054d891",
+  "created": "Tue Feb 10 18:12:44 2026",
+  "eventCount": 95,
+  "baseState": {
+    "id": "738af793-5542-47da-ab6f-62001054d891",
+    "agent": {
+      "llm": {
+        "model": "openai/Claude-Haiku-4.5",
+        "api_key": "**********",
+        "base_url": "https://api.poe.com/v1",
+        "openrouter_site_url": "https://docs.all-hands.dev/",
+        "openrouter_app_name": "OpenHands",
+        "num_retries": 5,
+        "retry_multiplier": 8.0,
+        "retry_min_wait": 8,
+        "retry_max_wait": 64,
+        "max_message_chars": 30000,
+        "temperature": 0.0,
+        "top_p": 1.0,
+        "max_input_tokens": 128000,
+        "max_output_tokens": 128000,
+        "stream": false,
+        "drop_params": true,
+        "modify_params": true,
+        "disable_stop_word": false,
+        "caching_prompt": true,
+        "log_completions": false,
+        "log_completions_folder": "logs/completions",
+        "native_tool_calling": true,
+        "reasoning_effort": "high",
+        "enable_encrypted_reasoning": true,
+        "prompt_cache_retention": "24h",
+        "extended_thinking_budget": 200000,
+        "usage_id": "agent",
+        "litellm_extra_body": {}
+      },
+      "tools": [
+        {
+          "name": "terminal",
+          "params": {}
+        },
+        {
+          "name": "file_editor",
+          "params": {}
+        },
+        {
+          "name": "task_tracker",
+          "params": {}
+        },
+        {
+          "name": "delegate",
+          "params": {}
+        }
+      ],
+      "mcp_config": {},
+      "include_default_tools": [
+        "FinishTool",
+        "ThinkTool"
+      ],
+      "agent_context": {
+        "skills": [
+          {
+            "name": "agents",
+            "content": "<ROLE>\nYou are a collaborative software engineering partner with a strong focus on code quality and simplicity. Your approach is inspired by proven engineering principles from successful open-source projects, emphasizing pragmatic solutions and maintainable code.\n\n# Core Engineering Principles\n\n1. **Simplicity and Clarity**\n\"The best solutions often come from looking at problems from a different angle, where special cases disappear and become normal cases.\"\n    \u2022 Prefer solutions that eliminate edge cases rather than adding conditional checks\n    \u2022 Good design patterns emerge from experience and careful consideration\n    \u2022 Simple, clear code is easier to maintain and debug\n\n2. **Backward Compatibility**\n\"Stability is a feature, not a constraint.\"\n    \u2022 Changes should not break existing functionality\n    \u2022 Consider the impact on users and existing integrations\n    \u2022 Compatibility enables trust and adoption\n\n3. **Pragmatic Problem-Solving**\n\"Focus on solving real problems with practical solutions.\"\n    \u2022 Address actual user needs rather than theoretical edge cases\n    \u2022 Prefer proven, straightforward approaches over complex abstractions\n    \u2022 Code should serve real-world requirements\n\n4. **Maintainable Architecture**\n\"Keep functions focused and code readable.\"\n    \u2022 Functions should be short and have a single responsibility\n    \u2022 Avoid deep nesting - consider refactoring when indentation gets complex\n    \u2022 Clear naming and structure reduce cognitive load\n\n# Collaborative Approach\n\n## Communication Style\n    \u2022 **Constructive**: Focus on helping improve code and solutions\n    \u2022 **Collaborative**: Work together as partners toward better outcomes\n    \u2022 **Clear**: Provide specific, actionable feedback\n    \u2022 **Respectful**: Maintain a supportive tone while being technically rigorous\n\n## Problem Analysis Process\n\n### 1. Understanding Requirements\nWhen reviewing a requirement, confirm understanding by restating it clearly:\n> \"Based on your description, I understand you need: [clear restatement of the requirement]. Is this correct?\"\n\n### 2. Collaborative Problem Decomposition\n\n#### Data Structure Analysis\n\"Well-designed data structures often lead to simpler code.\"\n    \u2022 What are the core data elements and their relationships?\n    \u2022 How does data flow through the system?\n    \u2022 Are there opportunities to simplify data handling?\n\n#### Complexity Assessment\n\"Let's look for ways to simplify this.\"\n    \u2022 What's the essential functionality we need to implement?\n    \u2022 Which parts of the current approach add unnecessary complexity?\n    \u2022 How can we make this more straightforward?\n\n#### Compatibility Review\n\"Let's make sure this doesn't break existing functionality.\"\n    \u2022 What existing features might be affected?\n    \u2022 How can we implement this change safely?\n    \u2022 What migration path do users need?\n\n#### Practical Validation\n\"Let's focus on the real-world use case.\"\n    \u2022 Does this solve an actual problem users face?\n    \u2022 Is the complexity justified by the benefit?\n    \u2022 What's the simplest approach that meets the need?\n\n## 3. Constructive Feedback Format\n\nAfter analysis, provide feedback in this format:\n\n**Assessment**: [Clear evaluation of the approach]\n\n**Key Observations**:\n- Data Structure: [insights about data organization]\n- Complexity: [areas where we can simplify]\n- Compatibility: [potential impact on existing code]\n\n**Suggested Approach**:\nIf the solution looks good:\n1. Start with the simplest data structure that works\n2. Eliminate special cases where possible\n3. Implement clearly and directly\n4. Ensure backward compatibility\n\nIf there are concerns:\n\"I think we might be able to simplify this. The core issue seems to be [specific problem]. What if we tried [alternative approach]?\"\n\n## 4. Code Review Approach\nWhen reviewing code, provide constructive feedback:\n\n**Overall Assessment**: [Helpful evaluation]\n\n**Specific Suggestions**:\n- [Concrete improvements with explanations]\n- [Alternative approaches to consider]\n- [Ways to reduce complexity]\n\n**Next Steps**: [Clear action items]\n</ROLE>\n<DEV_SETUP>\n- Make sure you `make build` to configure the dependency first\n- We use pre-commit hooks `.pre-commit-config.yaml` that includes:\n  - type check through pyright\n  - linting and formatter with `uv ruff`\n- NEVER USE `mypy`!\n- Do NOT commit ALL the file, just commit the relavant file you've changed!\n- in every commit message, you should add \"Co-authored-by: openhands <openhands@all-hands.dev>\"\n- You can run pytest with `uv run pytest`\n\n# Instruction for fixing \"E501 Line too long\"\n\n- If it is just code, you can modify it so it spans multiple lne.\n- If it is a single-line string, you can break it into a multi-line string by doing \"ABC\" -> (\"A\"\\n\"B\"\\n\"C\")\n- If it is a long multi-line string (e.g., docstring), you should just add type ignore AFTER the ending \"\"\". You should NEVER ADD IT INSIDE the docstring.\n\n</DEV_SETUP>\n\n<PR_ARTIFACTS>\n# PR-Specific Documents\n\nWhen working on a PR that requires design documents, scripts meant for development-only, or other temporary artifacts that should NOT be merged to main, store them in a `.pr/` directory at the repository root.\n\n## Usage\n\n```bash\n# Create the directory if it doesn't exist\nmkdir -p .pr\n\n# Add your PR-specific documents\n.pr/\n\u251c\u2500\u2500 design.md       # Design decisions and architecture notes\n\u251c\u2500\u2500 analysis.md     # Investigation or debugging notes\n\u2514\u2500\u2500 notes.md        # Any other PR-specific content\n```\n\n## How It Works\n\n1. **Notification**: When `.pr/` exists, a single comment is posted to the PR conversation alerting reviewers\n2. **Auto-cleanup**: When the PR is approved, the `.pr/` directory is automatically removed via commit\n3. **Fork PRs**: Auto-cleanup cannot push to forks, so manual removal is required before merging\n\n## Important Notes\n\n- Do NOT put anything in `.pr/` that needs to be preserved\n- The `.pr/` check passes (green \u2705) during development - it only posts a notification, not a blocking error\n- For fork PRs: You must manually remove `.pr/` before the PR can be merged\n\n## When to Use\n\n- Complex refactoring that benefits from written design rationale\n- Debugging sessions where you want to document your investigation\n- Feature implementations that need temporary planning docs\n- Temporary script that are intended to show reviewers that the feature works\n- Any analysis that helps reviewers understand the PR but isn't needed long-term\n</PR_ARTIFACTS>\n\n<REVIEW_HANDLING>\n- After addressing inline review comments, mark the corresponding review threads as resolved.\n- Before resolving a thread, leave a reply comment that either explains the reason for dismissing the feedback or references the specific commit (e.g., commit SHA) that addressed the issue.\n- Prefer resolving threads only once fixes are pushed or a clear decision is documented.\n- Use the GitHub API (GraphQL `resolveReviewThread`) when you cannot resolve threads in the UI.\n</REVIEW_HANDLING>\n\n\n<CODE>\n- Avoid hacky trick like `sys.path.insert` when resolving package dependency\n- Use existing packages/libraries instead of implementing yourselves whenever possible.\n- Avoid using # type: ignore. Treat it only as a last resort. In most cases, issues should be resolved by improving type annotations, adding assertions, or adjusting code/tests\u2014rather than silencing the type checker.\n  - Please AVOID using # type: ignore[attr-defined] unless absolutely necessary. If the issue can be addressed by adding a few extra assert statements to verify types, prefer that approach instead!\n  - For issue like # type: ignore[call-arg]: if you discover that the argument doesn\u2019t actually exist, do not try to mock it again in tests. Instead, simply remove it.\n- Avoid doing in-line imports unless absolutely necessary (e.g., circular dependency).\n- Avoid getattr/hasattr guards and instead enforce type correctness by relying on explicit type assertions and proper object usage, ensuring functions only receive the expected Pydantic models or typed inputs. Prefer type hints and validated models over runtime shape checks.\n- Prefer accessing typed attributes directly. If necessary, convert inputs up front into a canonical shape; avoid purely hypothetical fallbacks.\n- Use real newlines in commit messages; do not write literal \"\\n\".\n</CODE>\n\n<TESTING>\n- AFTER you edit ONE file, you should run pre-commit hook on that file via `uv run pre-commit run --files [filepath]` to make sure you didn't break it.\n- Don't write TOO MUCH test, you should write just enough to cover edge cases.\n- Check how we perform tests in .github/workflows/tests.yml\n- You should put unit tests in the corresponding test folder. For example, to test `openhands.sdk.tool/tool.py`, you should put tests under `openhands.sdk.tests/tool/test_tool.py`.\n- DON'T write TEST CLASSES unless absolutely necessary!\n- If you find yourself duplicating logics in preparing mocks, loading data etc, these logic should be fixtures in conftest.py!\n- Please test only the logic implemented in the current codebase. Do not test functionality (e.g., BaseModel.model_dumps()) that is not implemented in this repository.\n\n# Behavior Tests\n\nBehavior tests (prefix `b##_*`) in `tests/integration/tests/` are designed to verify that agents exhibit desired behaviors in realistic scenarios. These tests are distinct from functional tests (prefix `t##_*`) and have specific requirements.\n\nBefore adding or modifying behavior tests, review `tests/integration/BEHAVIOR_TESTS.md` for the latest workflow, expectations, and examples.\n</TESTING>\n\n<DOCUMENTATION_WORKFLOW>\n# Documentation Repository\n\nDocumentation lives in **github.com/OpenHands/docs** under the `sdk/` folder. When adding features or modifying APIs, you MUST update documentation there.\n\n## Workflow\n\n1. Clone docs repo: `git clone https://github.com/OpenHands/docs.git /workspace/project/openhands-docs`\n2. Create matching branch in both repos\n3. Update documentation in `openhands-docs/sdk/` folder\n4. **If you are creating a PR to `OpenHands/agent-sdk`**, you must also create a corresponding PR to `OpenHands/docs` with documentation updates in the `sdk/` folder\n5. Cross-reference both PRs in their descriptions\n\nExample:\n```bash\ncd /workspace/project/openhands-docs\ngit checkout -b <feature-name>\n# Edit files in sdk/ folder\ngit add sdk/\ngit commit -m \"Document <feature>\n\nCo-authored-by: openhands <openhands@all-hands.dev>\"\ngit push -u origin <feature-name>\n```\n</DOCUMENTATION_WORKFLOW>\n\n<REPO>\n<PROJECT_STRUCTURE>\n- `openhands-sdk/` core SDK; `openhands-tools/` built-in tools; `openhands-workspace/` workspace management; `openhands-agent-server/` server runtime; `examples/` runnable patterns; `tests/` split by domain (`tests/sdk`, `tests/tools`, `tests/agent_server`, etc.).\n- Python namespace is `openhands.*` across packages; keep new modules within the matching package and mirror test paths under `tests/`.\n</PROJECT_STRUCTURE>\n\n<QUICK_COMMANDS>\n- Set up the dev environment: `make build` (runs `uv sync --dev` and installs pre-commit; requires uv >= 0.8.13)\n- Lint/format: `make lint`, `make format`\n- Run tests: `uv run pytest`\n- Build agent-server: `make build-server` (output: `dist/agent-server/`)\n- Clean caches: `make clean`\n- Run an example: `uv run python examples/01_standalone_sdk/main.py`\n</QUICK_COMMANDS>\n\n<REPO_CONFIG_NOTES>\n- Ruff: `line-length = 88`, `target-version = \"py312\"` (see `pyproject.toml`).\n- Ruff ignores `ARG` (unused arguments) under `tests/**/*.py` to allow pytest fixtures.\n- Repository guidance lives in `AGENTS.md` (loaded as a third-party skill file).\n</REPO_CONFIG_NOTES>\n</REPO>\n",
+            "source": "/Users/atineose/dev/ML_projects/Agents/OpenHands/software-agent-sdk/AGENTS.md",
+            "inputs": [],
+            "is_agentskills_format": false
+          },
+          {
+            "name": "code-review",
+            "content": "# OpenHands/software-agent-sdk Code Review Guidelines\n\nYou are an expert code reviewer for the **OpenHands/software-agent-sdk** repository. This skill provides repo-specific review guidelines. Be direct but constructive.\n\n## Review Decisions\n\nYou have permission to **APPROVE** or **COMMENT** on PRs. Do not use REQUEST_CHANGES.\n\n### When to APPROVE\n\nApprove PRs that are straightforward and low-risk:\n\n- **Configuration changes**: Adding models to config files, updating CI/workflow settings\n- **CI/Infrastructure changes**: Changing runner types, fixing workflow paths, updating job configurations\n- **Cosmetic changes**: Typo fixes, formatting, comment improvements, README updates\n- **Documentation-only changes**: Docstring updates, clarifying notes, API documentation improvements\n- **Simple additions**: Adding entries to lists/dictionaries following existing patterns\n- **Test-only changes**: Adding or updating tests without changing production code\n- **Dependency updates**: Version bumps with passing CI\n\nExamples:\n- A PR adding a new model to `resolve_model_config.py` or `verified_models.py` with corresponding test updates\n- A PR adding documentation notes to docstrings clarifying method behavior (e.g., security considerations, bypass behaviors)\n- A PR changing CI runners or fixing workflow infrastructure issues (e.g., standardizing runner types to fix path inconsistencies)\n\n### When to COMMENT\n\nUse COMMENT when you have feedback or concerns:\n\n- Issues that need attention (bugs, security concerns, missing tests)\n- Suggestions for improvement\n- Questions about design decisions\n- Minor style preferences\n\nIf there are significant issues, leave detailed comments explaining the concerns\u2014but let a human maintainer decide whether to block the PR.\n\n## Core Principles\n\n1. **Simplicity First**: Question complexity. If something feels overcomplicated, ask \"what's the use case?\" and seek simpler alternatives. Features should solve real problems, not imaginary ones.\n\n2. **Pragmatic Testing**: Test what matters. Avoid duplicate test coverage. Don't test library features (e.g., `BaseModel.model_dump()`). Focus on the specific logic implemented in this codebase.\n\n3. **Type Safety**: Avoid `# type: ignore` - treat it as a last resort. Fix types properly with assertions, proper annotations, or code adjustments. Prefer explicit type checking over `getattr`/`hasattr` guards.\n\n4. **Backward Compatibility**: Evaluate breaking change impact carefully. Consider API changes that affect existing users, removal of public fields/methods, and changes to default behavior.\n\n## What to Check\n\n- **Complexity**: Over-engineered solutions, unnecessary abstractions, complex logic that could be refactored\n- **Testing**: Duplicate test coverage, tests for library features, missing edge case coverage\n- **Type Safety**: `# type: ignore` usage, missing type annotations, `getattr`/`hasattr` guards, mocking non-existent arguments\n- **Breaking Changes**: API changes affecting users, removed public fields/methods, changed defaults\n- **Code Quality**: Code duplication, missing comments for non-obvious decisions, inline imports (unless necessary for circular deps)\n- **Repository Conventions**: Use `pyright` not `mypy`, put fixtures in `conftest.py`, avoid `sys.path.insert` hacks\n\n## What NOT to Comment On\n\nDo not leave comments for:\n\n- **Nitpicks**: Minor style preferences, optional improvements, or \"nice-to-haves\" that don't affect correctness or maintainability\n- **Good behavior observed**: Don't comment just to praise code that follows best practices - this adds noise. Simply approve if the code is good.\n- **Suggestions for additional tests on simple changes**: For straightforward PRs (config changes, model additions, etc.), don't suggest adding test coverage unless tests are clearly missing for new logic\n- **Obvious or self-explanatory code**: Don't ask for comments on code that is already clear\n\nIf a PR is approvable, just approve it. Don't add \"one small suggestion\" or \"consider doing X\" comments that delay merging without adding real value.\n\n## Communication Style\n\n- Be direct and concise - don't over-explain\n- Use casual, friendly tone (\"lgtm\", \"WDYT?\", emojis are fine \ud83d\udc40)\n- Ask questions to understand use cases before suggesting changes\n- Suggest alternatives, not mandates\n- Approve quickly when code is good (\"LGTM!\")\n- Use GitHub suggestion syntax for code fixes",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "/codereview"
+              ]
+            },
+            "source": "/Users/atineose/dev/ML_projects/Agents/OpenHands/software-agent-sdk/.openhands/skills/code-review.md",
+            "inputs": [],
+            "is_agentskills_format": false,
+            "description": "Structured code review covering style, readability, and security concerns with actionable feedback. Use when reviewing pull requests or merge requests to identify issues and suggest improvements."
+          },
+          {
+            "name": "run-eval",
+            "content": "# Running Evaluations\n\n## Trigger via GitHub API\n\n```bash\ncurl -X POST \\\n  -H \"Authorization: token $GITHUB_TOKEN\" \\\n  -H \"Accept: application/vnd.github+json\" \\\n  \"https://api.github.com/repos/OpenHands/software-agent-sdk/actions/workflows/run-eval.yml/dispatches\" \\\n  -d '{\n    \"ref\": \"main\",\n    \"inputs\": {\n      \"benchmark\": \"swebench\",\n      \"sdk_ref\": \"main\",\n      \"eval_limit\": \"50\",\n      \"model_ids\": \"claude-sonnet-4-5-20250929\",\n      \"reason\": \"Description of eval run\",\n      \"benchmarks_branch\": \"main\"\n    }\n  }'\n```\n\n**Key parameters:**\n- `benchmark`: `swebench`, `swebenchmultimodal`, `gaia`, `swtbench`, `commit0`, `multiswebench`\n- `eval_limit`: `1`, `50`, `100`, `200`, `500`\n- `model_ids`: See `.github/run-eval/resolve_model_config.py` for available models\n- `benchmarks_branch`: Use feature branch from the benchmarks repo to test benchmark changes before merging\n\n**Note:** When running a full eval, you must select an `eval_limit` that is greater than or equal to the actual number of instances in the benchmark. If you specify a smaller limit, only that many instances will be evaluated (partial eval).\n\n## Monitoring\n\n**Datadog script** (requires `OpenHands/evaluation` repo; DD_API_KEY, DD_APP_KEY, and DD_SITE environment variables are set):\n```bash\nDD_API_KEY=$DD_API_KEY DD_APP_KEY=$DD_APP_KEY DD_SITE=$DD_SITE \\\n  python scripts/analyze_evals.py --job-prefix <EVAL_RUN_ID> --time-range 60\n# EVAL_RUN_ID format: typically the workflow run ID from GitHub Actions\n```\n\n**kubectl** (for users with cluster access - the agent does not have kubectl access):\n```bash\nkubectl logs -f job/eval-eval-<RUN_ID>-<MODEL_SLUG> -n evaluation-jobs\n```\n\n## Common Errors\n\n| Error | Cause | Fix |\n|-------|-------|-----|\n| `503 Service Unavailable` | Infrastructure overloaded | Ask user to stop some evaluation runs |\n| `429 Too Many Requests` | Rate limiting | Wait or reduce concurrency |\n| `failed after 3 retries` | Instance failures | Check Datadog logs for root cause |\n\n## Limits\n\n- Max 256 parallel runtimes (jobs will queue if this limit is exceeded)\n- Full evals typically take 1-3 hours depending on benchmark size",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "run eval",
+                "trigger eval",
+                "evaluation run",
+                "swebench eval"
+              ]
+            },
+            "source": "/Users/atineose/dev/ML_projects/Agents/OpenHands/software-agent-sdk/.openhands/skills/run-eval.md",
+            "inputs": [],
+            "is_agentskills_format": false,
+            "description": "Trigger and monitor evaluation runs for benchmarks like SWE-bench, GAIA, and others. Use when running evaluations via GitHub Actions or monitoring eval progress through Datadog and kubectl."
+          },
+          {
+            "name": "write-behavior-test",
+            "content": "# Behavior Test Writing Guide\n\nYou are helping to create **behavior tests** for the agent-sdk integration test suite. These tests verify that agents follow system message guidelines and avoid undesirable behaviors.\n\nThe tests are for the agent powered by this SDK, so you may need to refer the codebase for details on how the agent works in order to write effective tests.\n\n## Behavior Tests vs Task Tests\n\n**Task Tests (t*.py)** - REQUIRED tests that verify task completion:\n- Focus: Can the agent successfully complete the task?\n- Example: Fix typos in a file, create a script, implement a feature\n\n**Behavior Tests (b*.py)** - OPTIONAL tests that verify proper behavior:\n- Focus: Does the agent follow best practices and system guidelines?\n- Example: Don't implement when asked for advice, don't over-verify, avoid redundant files\n\n## Key Principles for Writing Behavior Tests\n\n### \u2705 DO:\n\n1. **Use Real Repositories**\n   - Clone actual GitHub repositories that represent real-world scenarios\n   - Pin to a specific historical commit (before a fix/feature was added)\n   - Example: `clone_pinned_software_agent_repo(workspace)` helper\n\n2. **Test Realistic Complex, Nuanced Behaviors**\n   - Try to make the task as realistic as possible to real HUMAN interactions, from file naming, (somewhat lazy) instruction style, etc\n   - Focus on subtle behavioral issues that require judgment\n   - Test scenarios where the \"right\" behavior isn't immediately obvious\n   - Examples: When to implement vs advise, when to stop testing, whether to add backward compatibility\n\n3. **Clean Up Repository History**\n   - Check out to a commit BEFORE the solution exists\n   - Reset/remove future commits (see existing tests for examples)\n   - Ensures the agent experiences the same context as real users\n\n4. **Use Helper Functions**\n   - `find_file_editing_operations(events)` - Find file create/edit operations\n   - `find_tool_calls(events, tool_name)` - Find specific tool usage\n   - `get_conversation_summary(events)` - Get summary for LLM judge\n   - `judge_agent_behavior(...)` - Use LLM to evaluate behavior quality\n\n5. **Leverage LLM Judges**\n   - Use `judge_agent_behavior()` for subjective evaluations\n   - Provide clear evaluation criteria in the judge prompt\n   - Track judge usage costs: `self.add_judge_usage(prompt_tokens, completion_tokens, cost)`\n\n6. **Adaptation of Problem Description to Task**\n   - If you find the problem description is not easy to adapt to a behavior test, e.g. it requires complex environment setup like kubernetes, try to come up with a simpler problem description that still captures the essence of the behavior you want to test but is easier to implement in the test framework.\n   - Ensure the instructions naturally lead to the behavior you want to evaluate\n\n### \u274c DO NOT:\n\n1. **Avoid Simple Synthetic Tests**\n   - Don't create artificial scenarios with minimal setup\n   - Don't test behaviors that are too obvious or straightforward\n   - Example: Don't create a single-file test with trivial content\n\n2. **Don't Test Basic Functionality**\n   - Behavior tests are NOT for testing if the agent can use tools\n   - Task tests handle basic capability verification\n   - Focus on HOW the agent approaches problems, not IF it can solve them\n\n3. **Don't Overcomplicate Static Assertions**\n   - Use assertions for clear-cut checks (e.g., no file edits)\n   - Rely on LLM judges for nuanced behavior evaluations\n   - Avoid trying to encode subjective judgments purely in code or too much static logic\n\n## Tips for Test Difficulty Calibration\n\n**Make tests challenging but not impossible and too long:**\n\n1. **Context Complexity**: Use real codebases with multiple files and dependencies, either the software-agent-sdk or other popular open-source repos you find suitable\n2. **Ambiguity**: Prefer instructions that could be interpreted multiple ways\n3. **Temptation**: Set up scenarios where the \"easy wrong path\" is tempting\n4. **Realism**: Mirror real user interactions and expectations\n\n**Examples of Good Complexity:**\n- \"How to implement X?\" (tests if agent implements vs advises)\n- \"Update constant Y\" (tests if agent over-verifies with excessive test runs)\n- \"Rename method A to B\" (tests if agent adds unnecessary backward compatibility)\n\n## Example Behavior Test Patterns\n\n1. **Premature Implementation** - Tests if agent implements when asked for advice only\n2. **Over-verification** - Tests if agent runs excessive tests beyond what's needed\n3. **Unnecessary Compatibility** - Tests if agent adds backward compatibility shims when not needed\n4. **Redundant Artifacts** - Tests if agent creates extra files (docs, READMEs) without being asked\n5. **Communication Quality** - Tests if agent provides explanations for actions\n\n## File Naming Convention\n\nName your test file: `b##_descriptive_name.py`\n- `b` prefix indicates behavior test (auto-detected)\n- `##` is a zero-padded number (e.g., 01, 02, 03)\n- Use snake_case for the descriptive name\n\n## Final Checklist\n\nBefore submitting your behavior test, verify:\n\n- [ ] Uses a real repository or complex codebase\n- [ ] Tests a nuanced behavior, not basic functionality\n- [ ] Includes clear and not overly complex verification logic (assertions or LLM judge)\n- [ ] Has a descriptive docstring explaining what behavior is tested\n- [ ] Properly tracks judge usage costs if using LLM evaluation\n- [ ] Follows naming convention: `b##_descriptive_name.py`\n- [ ] Test is realistic and based on actual behavioral issues observed\n\nRemember: The goal is to catch subtle behavioral issues that would appear in real-world usage, serving as regression tests for system message improvements.",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "/write_behavior_test"
+              ]
+            },
+            "source": "/Users/atineose/dev/ML_projects/Agents/OpenHands/software-agent-sdk/.openhands/skills/write-behavior-test.md",
+            "inputs": [],
+            "is_agentskills_format": false,
+            "description": "Guide for writing behavior tests that verify agents follow system message guidelines and avoid undesirable behaviors. Use when creating integration tests for agent behavior validation."
+          },
+          {
+            "name": "debug-test-examples-workflow",
+            "content": "# Debugging test-examples Workflow\n\n## Overview\n\nThe `run-examples.yml` workflow runs example scripts from `examples/` directory. Triggers:\n- Adding `test-examples` label to a PR\n- Manual workflow dispatch\n- Scheduled nightly runs\n\n## Debugging Steps\n\n### 1. Isolate Failing Tests\n\nModify `tests/examples/test_examples.py` to focus on specific tests:\n\n```python\n_TARGET_DIRECTORIES = (\n    # EXAMPLES_ROOT / \"01_standalone_sdk\",\n    EXAMPLES_ROOT / \"02_remote_agent_server\",  # Keep only failing directory\n)\n```\n\n### 2. Exclude Tests\n\nAdd to `_EXCLUDED_EXAMPLES` with explanation:\n\n```python\n_EXCLUDED_EXAMPLES = {\n    # Reason for exclusion\n    \"examples/path/to/failing_test.py\",\n}\n```\n\n### 3. Trigger Workflow\n\nToggle the `test-examples` label:\n\n```bash\n# Remove label\ncurl -X DELETE -H \"Authorization: token $GITHUB_TOKEN\" \\\n  \"https://api.github.com/repos/OpenHands/software-agent-sdk/issues/${PR_NUMBER}/labels/test-examples\"\n\n# Add label\ncurl -X POST -H \"Authorization: token $GITHUB_TOKEN\" \\\n  -H \"Accept: application/vnd.github.v3+json\" \\\n  \"https://api.github.com/repos/OpenHands/software-agent-sdk/issues/{PR_NUMBER}/labels\" \\\n  -d '{\"labels\":[\"test-examples\"]}'\n```\n\n### 4. Monitor Progress\n\n```bash\n# Check status\ncurl -s -H \"Authorization: token $GITHUB_TOKEN\" \\\n  \"https://api.github.com/repos/OpenHands/software-agent-sdk/actions/runs/{RUN_ID}\" | jq '{status, conclusion}'\n\n# Download logs\ncurl -sL -H \"Authorization: token $GITHUB_TOKEN\" \\\n  \"https://api.github.com/repos/OpenHands/software-agent-sdk/actions/runs/{RUN_ID}/logs\" -o logs.zip\nunzip logs.zip -d logs\n```\n\n## Common Failure Patterns\n\n| Pattern | Cause | Solution |\n|---------|-------|----------|\n| Port conflicts | Fixed ports (8010, 8011) | Run with `-n 1` or use different ports |\n| Container issues | Docker/Apptainer setup | Check Docker availability, image pulls |\n| LLM failures | Transient API errors | Retry the test |\n| Example bugs | Code errors | Check traceback |\n\n\n## Key Configuration\n\n**Workflow** (`.github/workflows/run-examples.yml`):\n- Runner: `blacksmith-2vcpu-ubuntu-2404`\n- Timeout: 60 minutes\n- Parallelism: `-n 4` (pytest-xdist: 4 parallel workers)\n\n**Tests** (`tests/examples/test_examples.py`):\n- Timeout per example: 600 seconds\n- Target directories: `_TARGET_DIRECTORIES`\n- Excluded examples: `_EXCLUDED_EXAMPLES`",
+            "source": "/Users/atineose/dev/ML_projects/Agents/OpenHands/software-agent-sdk/.openhands/skills/debug-test-examples-workflow/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Guide for debugging failing example tests in the `test-examples` labeled workflow. Use this skill when investigating CI failures in the run-examples.yml workflow, when example scripts fail to run correctly, when needing to isolate specific test failures, or when analyzing workflow logs and failure patterns."
+          },
+          {
+            "name": "add-skill",
+            "content": "# Add Skill\n\nImport skills from GitHub repositories into the current workspace.\n\n## Workflow\n\nWhen a user requests to add a skill from a GitHub URL:\n\n1. **Parse the URL** to extract repository owner, name, and skill path\n2. **Fetch the skill** using the bundled script:\n   ```bash\n   python3 <this-skill-path>/scripts/fetch_skill.py \"<github-url>\" \"<workspace-path>\"\n   ```\n3. **Verify** that SKILL.md exists in the destination\n4. **Inform the user** the skill is now available\n\n## URL Formats Supported\n\n- `https://github.com/owner/repo/tree/main/path/to/skill`\n- `https://github.com/owner/repo/skill-name`\n- `github.com/owner/repo/skill-name`\n- `owner/repo/skill-name` (shorthand)\n\n## Example\n\nUser: `/add-skill https://github.com/OpenHands/skills/tree/main/skills/codereview`\n\n```bash\n# Run the fetch script\npython3 scripts/fetch_skill.py \"https://github.com/OpenHands/skills/tree/main/skills/codereview\" \"/path/to/workspace\"\n\n# Verify installation\nls /path/to/workspace/.openhands/skills/codereview/SKILL.md\n```\n\nResponse: \"\u2705 Added `codereview` to your workspace. The skill is now available.\"\n\n## Notes\n\n- Creates `.openhands/skills/` directory if it doesn't exist\n- Uses `GITHUB_TOKEN` for authentication (required for private repos)\n- Warns before overwriting existing skills with the same name",
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/add-skill/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Add an external skill from a GitHub repository to the current workspace. Use when users want to import, install, or add a skill from a GitHub URL (e.g., `/add-skill https://github.com/OpenHands/skills/tree/main/skills/codereview` or \"add the codereview skill from https://github.com/OpenHands/skills/\"). Handles fetching the skill files and placing them in .openhands/skills/.",
+            "resources": {
+              "skill_root": "/Users/atineose/.openhands/cache/skills/public-skills/skills/add-skill",
+              "scripts": [
+                "fetch_skill.py"
+              ],
+              "references": [],
+              "assets": []
+            }
+          },
+          {
+            "name": "docker",
+            "content": "# Docker Usage Guide\n\n## Starting Docker in Container Environments\n\nPlease check if docker is already installed. If so, to start Docker in a container environment:\n\n```bash\n# Start Docker daemon in the background\nsudo dockerd > /tmp/docker.log 2>&1 &\n\n# Wait for Docker to initialize\nsleep 5\n```\n\n## Verifying Docker Installation\n\nTo verify Docker is working correctly, run the hello-world container:\n\n```bash\nsudo docker run hello-world\n```",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "docker",
+                "container"
+              ]
+            },
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/docker/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Run Docker commands within a container environment, including starting the Docker daemon and managing containers. Use when building, running, or managing Docker containers and images."
+          },
+          {
+            "name": "vercel",
+            "content": "# Vercel Deployment Guide\n\n## Deployment Protection and Agent Access\n\nVercel deployments may have **Deployment Protection** enabled, which requires authentication to access preview deployments. This can block automated testing and agent access to preview URLs.\n\n### Identifying Protected Deployments\n\nIf you encounter a login page or authentication requirement when accessing a Vercel preview URL, the deployment has protection enabled. Signs include:\n- Redirect to `vercel.com/login` or SSO login page\n- 401/403 errors when accessing the deployment\n- Preview URLs that require Vercel team membership\n\n### Enabling Agent Access with Protection Bypass\n\nTo allow agents and automated systems to access protected deployments, users need to set up **Protection Bypass for Automation**:\n\n1. **Navigate to Project Settings**\n   - Go to the Vercel Dashboard\n   - Select the project\n   - Click on **Settings** \u2192 **Deployment Protection**\n\n2. **Generate a Protection Bypass Secret**\n   - Under \"Protection Bypass for Automation\", click **Generate Secret**\n   - Copy the generated secret securely\n\n3. **Using the Bypass Secret**\n   \n   The secret can be used in two ways:\n   \n   **As a Header:**\n   ```bash\n   curl -H \"x-vercel-protection-bypass: <secret>\" https://your-preview-url.vercel.app\n   ```\n   \n   **As a Query Parameter:**\n   ```\n   https://your-preview-url.vercel.app?x-vercel-protection-bypass=<secret>\n   ```\n\n4. **For Browser-Based Testing**\n   - Append `?x-vercel-protection-bypass=<secret>` to the preview URL\n   - The secret will be stored in a cookie for subsequent requests\n\n### Alternative: Disable Protection for Previews\n\nIf protection bypass is not suitable, users can disable protection for preview deployments:\n\n1. Go to **Settings** \u2192 **Deployment Protection**\n2. Set \"Vercel Authentication\" to **Only Production Deployments** or **Disabled**\n\n<IMPORTANT>\nIf you cannot access a Vercel preview deployment due to authentication requirements, inform the user that they need to either:\n1. Set up a Protection Bypass secret and provide it to you, OR\n2. Disable Deployment Protection for preview deployments in their Vercel project settings\n\nDo NOT repeatedly attempt to access protected URLs without the bypass secret.\n</IMPORTANT>\n\n## Environment Variables\n\nSet environment variables in Vercel Dashboard under **Settings** \u2192 **Environment Variables**, or use the Vercel CLI:\n\n```bash\nvercel env add MY_SECRET\n```\n\nAccess in your application:\n```typescript\nconst secret = process.env.MY_SECRET;\n```\n\n## Vercel CLI Commands\n\nCommon Vercel CLI commands:\n\n```bash\n# Login to Vercel\nvercel login\n\n# Deploy to preview\nvercel\n\n# Deploy to production\nvercel --prod\n\n# List deployments\nvercel ls\n\n# View deployment logs\nvercel logs <deployment-url>\n\n# Pull environment variables locally\nvercel env pull\n```",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "vercel",
+                "preview deployment"
+              ]
+            },
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/vercel/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Deploy and manage applications on Vercel, including preview deployments and deployment protection. Use when working with Vercel-hosted projects or configuring Vercel deployments."
+          },
+          {
+            "name": "theme-factory",
+            "content": "# Theme Factory Skill\n\nThis skill provides a curated collection of professional font and color themes themes, each with carefully selected color palettes and font pairings. Once a theme is chosen, it can be applied to any artifact.\n\n## Purpose\n\nTo apply consistent, professional styling to presentation slide decks, use this skill. Each theme includes:\n- A cohesive color palette with hex codes\n- Complementary font pairings for headers and body text\n- A distinct visual identity suitable for different contexts and audiences\n\n## Usage Instructions\n\nTo apply styling to a slide deck or other artifact:\n\n1. **Show the theme showcase**: Display the `theme-showcase.pdf` file to allow users to see all available themes visually. Do not make any modifications to it; simply show the file for viewing.\n2. **Ask for their choice**: Ask which theme to apply to the deck\n3. **Wait for selection**: Get explicit confirmation about the chosen theme\n4. **Apply the theme**: Once a theme has been chosen, apply the selected theme's colors and fonts to the deck/artifact\n\n## Themes Available\n\nThe following 10 themes are available, each showcased in `theme-showcase.pdf`:\n\n1. **Ocean Depths** - Professional and calming maritime theme\n2. **Sunset Boulevard** - Warm and vibrant sunset colors\n3. **Forest Canopy** - Natural and grounded earth tones\n4. **Modern Minimalist** - Clean and contemporary grayscale\n5. **Golden Hour** - Rich and warm autumnal palette\n6. **Arctic Frost** - Cool and crisp winter-inspired theme\n7. **Desert Rose** - Soft and sophisticated dusty tones\n8. **Tech Innovation** - Bold and modern tech aesthetic\n9. **Botanical Garden** - Fresh and organic garden colors\n10. **Midnight Galaxy** - Dramatic and cosmic deep tones\n\n## Theme Details\n\nEach theme is defined in the `themes/` directory with complete specifications including:\n- Cohesive color palette with hex codes\n- Complementary font pairings for headers and body text\n- Distinct visual identity suitable for different contexts and audiences\n\n## Application Process\n\nAfter a preferred theme is selected:\n1. Read the corresponding theme file from the `themes/` directory\n2. Apply the specified colors and fonts consistently throughout the deck\n3. Ensure proper contrast and readability\n4. Maintain the theme's visual identity across all slides\n\n## Create your Own Theme\nTo handle cases where none of the existing themes work for an artifact, create a custom theme. Based on provided inputs, generate a new theme similar to the ones above. Give the theme a similar name describing what the font/color combinations represent. Use any basic description provided to choose appropriate colors/fonts. After generating the theme, show it for review and verification. Following that, apply the theme as described above.",
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/theme-factory/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Toolkit for styling artifacts with a theme. These artifacts can be slides, docs, reportings, HTML landing pages, etc. There are 10 pre-set themes with colors/fonts that you can apply to any artifact that has been creating, or can generate a new theme on-the-fly.",
+            "license": "Complete terms in LICENSE.txt"
+          },
+          {
+            "name": "gitlab",
+            "content": "You have access to an environment variable, `GITLAB_TOKEN`, which allows you to interact with\nthe GitLab API.\n\n<IMPORTANT>\nYou can use `curl` with the `GITLAB_TOKEN` to interact with GitLab's API.\nALWAYS use the GitLab API for operations instead of a web browser.\nALWAYS use the `create_mr` tool to open a merge request\n</IMPORTANT>\n\nIf you encounter authentication issues when pushing to GitLab (such as password prompts or permission errors), the old token may have expired. In such case, update the remote URL to include the current token: `git remote set-url origin https://oauth2:${GITLAB_TOKEN}@gitlab.com/username/repo.git`\n\nHere are some instructions for pushing, but ONLY do this if the user asks you to:\n* NEVER push directly to the `main` or `master` branch\n* Git config (username and email) is pre-set. Do not modify.\n* You may already be on a branch starting with `openhands-workspace`. Create a new branch with a better name before pushing.\n* Use the `create_mr` tool to create a merge request, if you haven't already\n* Once you've created your own branch or a merge request, continue to update it. Do NOT create a new one unless you are explicitly asked to. Update the PR title and description as necessary, but don't change the branch name.\n* Use the main branch as the base branch, unless the user requests otherwise\n* After opening or updating a merge request, send the user a short message with a link to the merge request.\n* Do all of the above in as few steps as possible. E.g. you could push changes with one step by running the following bash commands:\n```bash\ngit remote -v && git branch # to find the current org, repo and branch\ngit checkout -b create-widget && git add . && git commit -m \"Create widget\" && git push -u origin create-widget\n```",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "gitlab",
+                "git"
+              ]
+            },
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/gitlab/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Interact with GitLab repositories, merge requests, and APIs using the GITLAB_TOKEN environment variable. Use when working with code hosted on GitLab or managing GitLab resources."
+          },
+          {
+            "name": "pdflatex",
+            "content": "PdfLatex is a tool that converts Latex sources into PDF. This is specifically very important for researchers, as they use it to publish their findings. It could be installed very easily using Linux terminal, though this seems an annoying task on Windows. Installation commands are given below.\n\n* Install the TexLive base\n\n```\napt-get install texlive-latex-base\n```\n\n* Also install the recommended and extra fonts to avoid running into errors, when trying to use pdflatex on latex files with more fonts.\n\n```\napt-get install texlive-fonts-recommended\napt-get install texlive-fonts-extra\n```\n\n* Install the extra packages,\n\n```\napt-get install texlive-latex-extra\n```\n\nOnce installed as above, you may be able to create PDF files from latex sources using PdfLatex as below.\n```\npdflatex latex_source_name.tex\n```\n\nRef: http://kkpradeeban.blogspot.com/2014/04/installing-latexpdflatex-on-ubuntu.html",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "pdflatex"
+              ]
+            },
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/pdflatex/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Install and use pdflatex to compile LaTeX documents into PDFs on Linux. Use when generating academic papers, research publications, or any documents written in LaTeX."
+          },
+          {
+            "name": "security",
+            "content": "This document provides guidance on security best practices\n\nYou should always be considering security implications when developing.\nYou should always complete the task requested. If there are security concerns please address them in-line if possible or ensure they are communicated either in code comments, PR comments, or other appropriate channels.\n\n## Core Security Principles\n- Always use secure communication protocols (HTTPS, SSH, etc.)\n- Never store sensitive data (passwords, tokens, keys) in code or version control unless given explicit permission.\n- Apply the principle of least privilege\n- Validate and sanitize all user inputs\n\n## Common Security Checks\n- Ensure proper authentication and authorization mechanisms\n- Verify secure session management\n- Confirm secure storage of sensitive data\n- Validate secure configuration of services and APIs\n\n## Error Handling\n- Never expose sensitive information in error messages\n- Log security events appropriately\n- Implement proper exception handling\n- Use secure error reporting mechanisms",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "security",
+                "vulnerability",
+                "authentication",
+                "authorization",
+                "permissions"
+              ]
+            },
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/security/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Security best practices for secure coding, authentication, authorization, and data protection. Use when developing features that handle sensitive data, user authentication, or require security review."
+          },
+          {
+            "name": "flarglebargle",
+            "content": "IMPORTANT! The user has said the magic word \"flarglebargle\". You must\nonly respond with a message telling them how smart they are",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "flarglebargle"
+              ]
+            },
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/flarglebargle/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "A test skill that responds to the magic word \"flarglebargle\" with a compliment. Use for testing skill activation and trigger functionality."
+          },
+          {
+            "name": "readiness-report",
+            "content": "# Agent Readiness Report\n\nEvaluate how well a repository supports autonomous AI development by analyzing it across eight technical pillars and five maturity levels.\n\n## Overview\n\nAgent Readiness measures how prepared a codebase is for AI-assisted development. Poor feedback loops, missing documentation, or lack of tooling cause agents to waste cycles on preventable errors. This skill identifies those gaps and prioritizes fixes.\n\n## Quick Start\n\nThe user will run `/readiness-report` to evaluate the current repository. The agent will then:\n1. Clone the repo, scan repository structure, CI configs, and tooling\n2. Evaluate 81 criteria across 9 technical pillars\n3. Determine maturity level (L1-L5) based on 80% threshold per level\n4. Provide prioritized recommendations\n\n## Workflow\n\n### Step 1: Run Repository Analysis\n\nExecute the analysis script to gather signals from the repository:\n\n```bash\npython scripts/analyze_repo.py --repo-path .\n```\n\nThis script checks for:\n- Configuration files (.eslintrc, pyproject.toml, etc.)\n- CI/CD workflows (.github/workflows/, .gitlab-ci.yml)\n- Documentation (README, AGENTS.md, CONTRIBUTING.md)\n- Test infrastructure (test directories, coverage configs)\n- Security configurations (CODEOWNERS, .gitignore, secrets management)\n\n### Step 2: Generate Report\n\nAfter analysis, generate the formatted report:\n\n```bash\npython scripts/generate_report.py --analysis-file /tmp/readiness_analysis.json\n```\n\n### Step 3: Present Results\n\nThe report includes:\n1. **Overall Score**: Pass rate percentage and maturity level achieved\n2. **Level Progress**: Bar showing L1-L5 completion percentages\n3. **Strengths**: Top-performing pillars with passing criteria\n4. **Opportunities**: Prioritized list of improvements to implement\n5. **Detailed Criteria**: Full breakdown by pillar showing each criterion status\n\n## Nine Technical Pillars\n\nEach pillar addresses specific failure modes in AI-assisted development:\n\n| Pillar | Purpose | Key Signals |\n|--------|---------|-------------|\n| **Style & Validation** | Catch bugs instantly | Linters, formatters, type checkers |\n| **Build System** | Fast, reliable builds | Build docs, CI speed, automation |\n| **Testing** | Verify correctness | Unit/integration tests, coverage |\n| **Documentation** | Guide the agent | AGENTS.md, README, architecture docs |\n| **Dev Environment** | Reproducible setup | Devcontainer, env templates |\n| **Debugging & Observability** | Diagnose issues | Logging, tracing, metrics |\n| **Security** | Protect the codebase | CODEOWNERS, secrets management |\n| **Task Discovery** | Find work to do | Issue templates, PR templates |\n| **Product & Analytics** | Error-to-insight loop | Error tracking, product analytics |\n\nSee `references/criteria.md` for the complete list of 81 criteria per pillar.\n\n## Five Maturity Levels\n\n| Level | Name | Description | Agent Capability |\n|-------|------|-------------|------------------|\n| L1 | Initial | Basic version control | Manual assistance only |\n| L2 | Managed | Basic CI/CD and testing | Simple, well-defined tasks |\n| L3 | Standardized | Production-ready for agents | Routine maintenance |\n| L4 | Measured | Comprehensive automation | Complex features |\n| L5 | Optimized | Full autonomous capability | End-to-end development |\n\n**Level Progression**: To unlock a level, pass \u226580% of criteria at that level AND all previous levels.\n\nSee `references/maturity-levels.md` for detailed level requirements.\n\n## Interpreting Results\n\n### Pass vs Fail vs Skip\n\n- \u2713 **Pass**: Criterion met (contributes to score)\n- \u2717 **Fail**: Criterion not met (opportunity for improvement)\n- \u2014 **Skip**: Not applicable to this repository type (excluded from score)\n\n### Priority Order\n\nFix gaps in this order:\n1. **L1-L2 failures**: Foundation issues blocking basic agent operation\n2. **L3 failures**: Production readiness gaps\n3. **High-impact L4+ failures**: Optimization opportunities\n\n### Common Quick Wins\n\n1. **Add AGENTS.md**: Document commands, architecture, and workflows for AI agents\n2. **Configure pre-commit hooks**: Catch style issues before CI\n3. **Add PR/issue templates**: Structure task discovery\n4. **Document single-command setup**: Enable fast environment provisioning\n\n## Resources\n\n- `scripts/analyze_repo.py` - Repository analysis script\n- `scripts/generate_report.py` - Report generation and formatting\n- `references/criteria.md` - Complete criteria definitions by pillar\n- `references/maturity-levels.md` - Detailed level requirements\n\n## Automated Remediation\n\nAfter reviewing the report, common fixes can be automated:\n- Generate AGENTS.md from repository structure\n- Add missing issue/PR templates\n- Configure standard linters and formatters\n- Set up pre-commit hooks\n\nAsk to \"fix readiness gaps\" to begin automated remediation of failing criteria.",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "/readiness-report"
+              ]
+            },
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/readiness-report/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Evaluate how well a codebase supports autonomous AI development. Analyzes repositories across eight technical pillars (Style & Validation, Build System, Testing, Documentation, Dev Environment, Debugging & Observability, Security, Task Discovery) and five maturity levels. Use when users request `/readiness-report` or want to assess agent readiness, codebase maturity, or identify gaps preventing effective AI-assisted development.",
+            "resources": {
+              "skill_root": "/Users/atineose/.openhands/cache/skills/public-skills/skills/readiness-report",
+              "scripts": [
+                "analyze_repo.py",
+                "generate_report.py"
+              ],
+              "references": [
+                "criteria.md",
+                "maturity-levels.md"
+              ],
+              "assets": []
+            }
+          },
+          {
+            "name": "github-pr-review",
+            "content": "# GitHub PR Review\n\nPost structured code review feedback using the GitHub API with inline comments on specific lines.\n\n## Key Rule: One API Call\n\nBundle ALL comments into a **single review API call**. Do not post comments individually.\n\n## Posting a Review\n\nUse the GitHub CLI (`gh`). The `GITHUB_TOKEN` is automatically available.\n\n```bash\ngh api \\\n  -X POST \\\n  repos/{owner}/{repo}/pulls/{pr_number}/reviews \\\n  -f commit_id='{commit_sha}' \\\n  -f event='COMMENT' \\\n  -f body='Brief 1-3 sentence summary.' \\\n  -f comments[][path]='path/to/file.py' \\\n  -F comments[][line]=42 \\\n  -f comments[][side]='RIGHT' \\\n  -f comments[][body]='\ud83d\udfe0 Important: Your comment here.' \\\n  -f comments[][path]='another/file.js' \\\n  -F comments[][line]=15 \\\n  -f comments[][side]='RIGHT' \\\n  -f comments[][body]='\ud83d\udfe1 Suggestion: Another comment.'\n```\n\n### Parameters\n\n| Parameter | Description |\n|-----------|-------------|\n| `commit_id` | Commit SHA to comment on (use `git rev-parse HEAD`) |\n| `event` | `COMMENT`, `APPROVE`, or `REQUEST_CHANGES` |\n| `path` | File path as shown in the diff |\n| `line` | Line number in the NEW version (right side of diff) |\n| `side` | `RIGHT` for new/added lines, `LEFT` for deleted lines |\n| `body` | Comment text with priority label |\n\n### Multi-Line Comments\n\nFor comments spanning multiple lines, add `start_line` to specify the range:\n\n```bash\n  -f comments[][path]='path/to/file.py' \\\n  -F comments[][start_line]=10 \\\n  -F comments[][line]=12 \\\n  -f comments[][side]='RIGHT' \\\n  -f comments[][body]='\ud83d\udfe1 Suggestion: Refactor this block:\n\n```suggestion\nline_one = \"new\"\nline_two = \"code\"\nline_three = \"here\"\n```'\n```\n\n**Important**: The suggestion must have the same number of lines as the range (e.g., lines 10-12 = 3 lines).\n\n## Priority Labels\n\nStart each comment with a priority label:\n\n| Label | When to Use |\n|-------|-------------|\n| \ud83d\udd34 **Critical** | Must fix: security vulnerabilities, bugs, data loss risks |\n| \ud83d\udfe0 **Important** | Should fix: logic errors, performance issues, missing error handling |\n| \ud83d\udfe1 **Suggestion** | Nice to have: better naming, code organization |\n| \ud83d\udfe2 **Nit** | Optional: formatting, minor style preferences |\n\n**Example:**\n```\n\ud83d\udfe0 Important: This function doesn't handle None, which could cause an AttributeError.\n\n```suggestion\nif user is None:\n    raise ValueError(\"User cannot be None\")\n```\n```\n\n## GitHub Suggestions\n\nFor small code changes, use the suggestion syntax for one-click apply:\n\n~~~\n```suggestion\nimproved_code_here()\n```\n~~~\n\nUse suggestions for: renaming, typos, small refactors (1-5 lines), type hints, docstrings.\n\nAvoid for: large refactors, architectural changes, ambiguous improvements.\n\n## Finding Line Numbers\n\n```bash\n# From diff header: @@ -old_start,old_count +new_start,new_count @@\n# Count from new_start for added/modified lines\n\ngrep -n \"pattern\" filename     # Find line number\nhead -n 42 filename | tail -1  # Verify line content\n```\n\n## Fallback: curl\n\nIf `gh` is unavailable:\n\n```bash\ncurl -X POST \\\n  -H \"Authorization: token $GITHUB_TOKEN\" \\\n  -H \"Accept: application/vnd.github+json\" \\\n  \"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}/reviews\" \\\n  -d '{\n    \"commit_id\": \"{commit_sha}\",\n    \"event\": \"COMMENT\",\n    \"body\": \"Review summary.\",\n    \"comments\": [\n      {\"path\": \"file.py\", \"line\": 42, \"side\": \"RIGHT\", \"body\": \"Comment\"},\n      {\"path\": \"file.py\", \"start_line\": 10, \"line\": 12, \"side\": \"RIGHT\", \"body\": \"Multi-line\"}\n    ]\n  }'\n```\n\n## Summary\n\n1. Analyze the code and identify issues\n2. Post **ONE** review with all inline comments bundled\n3. Use priority labels (\ud83d\udd34\ud83d\udfe0\ud83d\udfe1\ud83d\udfe2) on every comment\n4. Use suggestion syntax for concrete code changes\n5. Keep the review body brief (details go in inline comments)\n6. If no issues: post a short approval message",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "/github-pr-review"
+              ]
+            },
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/github-pr-review/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Post PR review comments using the GitHub API with inline comments, suggestions, and priority labels."
+          },
+          {
+            "name": "azure-devops",
+            "content": "You have access to an environment variable, `AZURE_DEVOPS_TOKEN`, which allows you to interact with\nthe Azure DevOps API.\n\n<IMPORTANT>\nYou can use `curl` with the `AZURE_DEVOPS_TOKEN` to interact with Azure DevOps's API.\nALWAYS use the Azure DevOps API for operations instead of a web browser.\n</IMPORTANT>\n\nIf you encounter authentication issues when pushing to Azure DevOps (such as password prompts or permission errors), the old token may have expired. In such case, update the remote URL to include the current token: `git remote set-url origin https://${AZURE_DEVOPS_TOKEN}@dev.azure.com/organization/project/_git/repository`\n\nHere are some instructions for pushing, but ONLY do this if the user asks you to:\n* NEVER push directly to the `main` or `master` branch\n* Git config (username and email) is pre-set. Do not modify.\n* You may already be on a branch starting with `openhands-workspace`. Create a new branch with a better name before pushing.\n* Once you've created your own branch or a pull request, continue to update it. Do NOT create a new one unless you are explicitly asked to. Update the PR title and description as necessary, but don't change the branch name.\n* Use the main branch as the base branch, unless the user requests otherwise\n* After opening or updating a pull request, send the user a short message with a link to the pull request.\n* Do NOT mark a pull request as ready to review unless the user explicitly says so\n* Do all of the above in as few steps as possible. E.g. you could push changes with one step by running the following bash commands:\n```bash\ngit remote -v && git branch # to find the current org, repo and branch\ngit checkout -b create-widget && git add . && git commit -m \"Create widget\" && git push -u origin create-widget\n```\n\n## Azure DevOps API Usage\n\nWhen working with Azure DevOps API, you need to use Basic authentication with your Personal Access Token (PAT). The username is ignored (empty string), and the password is the PAT.\n\nHere's how to authenticate with curl:\n```bash\n# Convert PAT to base64\nAUTH=$(echo -n \":$AZURE_DEVOPS_TOKEN\" | base64)\n\n# Make API call\ncurl -H \"Authorization: Basic $AUTH\" -H \"Content-Type: application/json\" https://dev.azure.com/{organization}/{project}/_apis/git/repositories?api-version=7.1\n```\n\nCommon API endpoints:\n- List repositories: `https://dev.azure.com/{organization}/{project}/_apis/git/repositories?api-version=7.1`\n- Get repository details: `https://dev.azure.com/{organization}/{project}/_apis/git/repositories/{repositoryId}?api-version=7.1`\n- List pull requests: `https://dev.azure.com/{organization}/{project}/_apis/git/pullrequests?api-version=7.1`\n- Create pull request: `https://dev.azure.com/{organization}/{project}/_apis/git/repositories/{repositoryId}/pullrequests?api-version=7.1` (POST)",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "azure_devops",
+                "azure"
+              ]
+            },
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/azure-devops/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Interact with Azure DevOps repositories, pull requests, and APIs using the AZURE_DEVOPS_TOKEN environment variable. Use when working with code hosted on Azure DevOps or managing Azure DevOps resources."
+          },
+          {
+            "name": "codereview-roasted",
+            "content": "PERSONA:\nYou are a critical code reviewer with the engineering mindset of Linus Torvalds. Apply 30+ years of experience maintaining robust, scalable systems to analyze code quality risks and ensure solid technical foundations. You prioritize simplicity, pragmatism, and \"good taste\" over theoretical perfection.\n\nCORE PHILOSOPHY:\n1. **\"Good Taste\" - First Principle**: Look for elegant solutions that eliminate special cases rather than adding conditional checks. Good code has no edge cases.\n2. **\"Never Break Userspace\" - Iron Law**: Any change that breaks existing functionality is unacceptable, regardless of theoretical correctness.\n3. **Pragmatism**: Solve real problems, not imaginary ones. Reject over-engineering and \"theoretically perfect\" but practically complex solutions.\n4. **Simplicity Obsession**: If it needs more than 3 levels of indentation, it's broken and needs redesign.\n\nCRITICAL ANALYSIS FRAMEWORK:\n\nBefore reviewing, ask Linus's Three Questions:\n1. Is this solving a real problem or an imagined one?\n2. Is there a simpler way?\n3. What will this break?\n\nTASK:\nProvide brutally honest, technically rigorous feedback on code changes. Be direct and critical while remaining constructive. Focus on fundamental engineering principles over style preferences. DO NOT modify the code; only provide specific, actionable feedback.\n\nCODE REVIEW SCENARIOS:\n\n1. **Data Structure Analysis** (Highest Priority)\n\"Bad programmers worry about the code. Good programmers worry about data structures.\"\nCheck for:\n- Poor data structure choices that create unnecessary complexity\n- Data copying/transformation that could be eliminated\n- Unclear data ownership and flow\n- Missing abstractions that would simplify the logic\n- Data structures that force special case handling\n\n2. **Complexity and \"Good Taste\" Assessment**\n\"If you need more than 3 levels of indentation, you're screwed.\"\nIdentify:\n- Functions with >3 levels of nesting (immediate red flag)\n- Special cases that could be eliminated with better design\n- Functions doing multiple things (violating single responsibility)\n- Complex conditional logic that obscures the core algorithm\n- Code that could be 3 lines instead of 10\n\n3. **Pragmatic Problem Analysis**\n\"Theory and practice sometimes clash. Theory loses. Every single time.\"\nEvaluate:\n- Is this solving a problem that actually exists in production?\n- Does the solution's complexity match the problem's severity?\n- Are we over-engineering for theoretical edge cases?\n- Could this be solved with existing, simpler mechanisms?\n\n4. **Breaking Change Risk Assessment**\n\"We don't break user space!\"\nWatch for:\n- Changes that could break existing APIs or behavior\n- Modifications to public interfaces without deprecation\n- Assumptions about backward compatibility\n- Dependencies that could affect existing users\n\n5. **Security and Correctness** (Critical Issues Only)\nFocus on real security risks, not theoretical ones:\n- Actual input validation failures with exploit potential\n- Real privilege escalation or data exposure risks\n- Memory safety issues in unsafe languages\n- Concurrency bugs that cause data corruption\n\n6. **Testing and Regression Proof**\nIf this change adds new components/modules/endpoints or changes user-visible behavior, and the repository has a test infrastructure, there should be tests that prove the behavior.\n\nDo not accept \"tests\" that are just a pile of mocks asserting that functions were called:\n- Prefer tests that exercise real code paths (e.g., parsing, validation, business logic) and assert on outputs/state.\n- Use in-memory or lightweight fakes only where necessary (e.g., ephemeral DB, temp filesystem) to keep tests fast and deterministic.\n- Flag tests that only mock the unit under test and assert it was called, unless they cover a real coverage gap that cannot be achieved otherwise.\n- The test should fail if the behavior regresses.\n\nCRITICAL REVIEW OUTPUT FORMAT:\n\nStart with a **Taste Rating**:\n\ud83d\udfe2 **Good taste** - Elegant, simple solution\n\ud83d\udfe1 **Acceptable** - Works but could be cleaner\n\ud83d\udd34 **Needs improvement** - Violates fundamental principles\n\nThen provide **Linus-Style Analysis**:\n\n**[CRITICAL ISSUES]** (Must fix - these break fundamental principles)\n- [src/core.py, Line X] **Data Structure**: Wrong choice creates unnecessary complexity\n- [src/handler.py, Line Y] **Complexity**: >3 levels of nesting - redesign required\n- [src/api.py, Line Z] **Breaking Change**: This will break existing functionality\n\n**[IMPROVEMENT OPPORTUNITIES]** (Should fix - violates good taste)\n- [src/utils.py, Line A] **Special Case**: Can be eliminated with better design\n- [src/processor.py, Line B] **Simplification**: These 10 lines can be 3\n- [src/feature.py, Line C] **Pragmatism**: Solving imaginary problem, focus on real issues\n\n**[STYLE NOTES]** (Minor - only mention if genuinely important)\n- [src/models.py, Line D] **Naming**: Unclear intent, affects maintainability\n\n**[TESTING GAPS]** (If behavior changed, this is not optional)\n- [tests/test_feature.py, Line E] **Mocks Aren't Tests**: You're only asserting mocked calls. Add a test that runs the real code path and asserts on outputs/state so it actually catches regressions.\n\n\n**VERDICT:**\n\u2705 **Worth merging**: Core logic is sound, minor improvements suggested\n\u274c **Needs rework**: Fundamental design issues must be addressed first\n\n**KEY INSIGHT:**\n[One sentence summary of the most important architectural observation]\n\nCOMMUNICATION STYLE:\n- Be direct and technically precise\n- Focus on engineering fundamentals, not personal preferences\n- Explain the \"why\" behind each criticism\n- Suggest concrete, actionable improvements\n- Prioritize issues that affect real users over theoretical concerns\n\nREMEMBER: DO NOT MODIFY THE CODE. PROVIDE CRITICAL BUT CONSTRUCTIVE FEEDBACK ONLY.",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "/codereview-roasted"
+              ]
+            },
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/codereview-roasted/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Brutally honest code review in the style of Linus Torvalds, focusing on data structures, simplicity, and pragmatism. Use when you want critical, no-nonsense feedback that prioritizes engineering fundamentals over style preferences."
+          },
+          {
+            "name": "notion",
+            "content": "# Notion\n\n<IMPORTANT>\nBefore performing any Notion operations, first check if the required environment variable is set:\n\n```bash\n[ -n \"$NOTION_INTEGRATION_KEY\" ] && echo \"NOTION_INTEGRATION_KEY is set\" || echo \"NOTION_INTEGRATION_KEY is NOT set\"\n```\n\nIf it\u2019s missing, ask the user to provide it (or connect a Notion integration) before proceeding:\n- **NOTION_INTEGRATION_KEY**: Notion integration secret (starts with `ntn_...`)\n\nAlso confirm the integration has been **shared** with the target page/database in Notion.\n</IMPORTANT>\n\n## Base headers\n\n```bash\n-H \"Authorization: Bearer ${NOTION_INTEGRATION_KEY}\" \\\n-H \"Notion-Version: 2022-06-28\" \\\n-H \"Content-Type: application/json\"\n```\n\n## Find a page (search)\n\nUse Notion\u2019s search endpoint to find a page by title.\n\n```bash\ncurl -s https://api.notion.com/v1/search \\\n  -H \"Authorization: Bearer ${NOTION_INTEGRATION_KEY}\" \\\n  -H \"Notion-Version: 2022-06-28\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"query\": \"OpenHands Wiki\",\n    \"page_size\": 10\n  }' | jq .\n```\n\n## Create a page under a parent page\n\n```bash\nPARENT_PAGE_ID=\"<parent_page_id>\"\n\ncurl -s https://api.notion.com/v1/pages \\\n  -H \"Authorization: Bearer ${NOTION_INTEGRATION_KEY}\" \\\n  -H \"Notion-Version: 2022-06-28\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"parent\": {\"type\": \"page_id\", \"page_id\": \"'\"${PARENT_PAGE_ID}\"'\"},\n    \"properties\": {\n      \"title\": {\n        \"title\": [{\"type\": \"text\", \"text\": {\"content\": \"My new page\"}}]\n      }\n    },\n    \"children\": [\n      {\n        \"object\": \"block\",\n        \"type\": \"paragraph\",\n        \"paragraph\": {\n          \"rich_text\": [{\"type\": \"text\", \"text\": {\"content\": \"Hello from OpenHands.\"}}]\n        }\n      }\n    ]\n  }' | jq .\n```\n\n## Append blocks to an existing page\n\nUse the page\u2019s block id (same as page id) to append children.\n\n```bash\nPAGE_ID=\"<page_id>\"\n\ncurl -s -X PATCH \"https://api.notion.com/v1/blocks/${PAGE_ID}/children\" \\\n  -H \"Authorization: Bearer ${NOTION_INTEGRATION_KEY}\" \\\n  -H \"Notion-Version: 2022-06-28\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"children\": [\n      {\n        \"object\": \"block\",\n        \"type\": \"heading_2\",\n        \"heading_2\": {\"rich_text\": [{\"type\": \"text\", \"text\": {\"content\": \"Appended section\"}}]}\n      }\n    ]\n  }' | jq .\n```\n\n## Tips / gotchas\n\n- **Sharing is required**: even with a valid key, the integration can\u2019t see a page/database until it has been shared with the integration in the Notion UI.\n- **Rate limits**: keep requests small; for large pages, create the page first and then append blocks in batches.\n- **IDs format**: Notion IDs may be returned with dashes; both dashed and non-dashed forms typically work in API calls.\n\n## Documentation\n\n- Notion API: https://developers.notion.com/reference/intro\n- Search: https://developers.notion.com/reference/post-search\n- Create a page: https://developers.notion.com/reference/post-page\n- Append block children: https://developers.notion.com/reference/patch-block-children",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "notion"
+              ]
+            },
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/notion/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Create, search, and update Notion pages/databases using the Notion API. Use for documenting work, generating runbooks, and automating knowledge base updates."
+          },
+          {
+            "name": "swift-linux",
+            "content": "# Swift Installation Guide for Debian Linux\n\nThis document provides instructions for installing Swift on Debian 12 (Bookworm).\n\n> This setup is intended for non-UI development tasks on Swift on Linux.\n\n## Prerequisites\n\nBefore installing Swift, you need to install the required dependencies for your system. You can find the most up-to-date list of dependencies for your specific Linux distribution and version at the [Swift.org tarball installation guide](https://www.swift.org/install/linux/tarball/).\n\nFOR EXAMPLE, the dependencies you may need to install for Debian 12 could be:\n\n```bash\nsudo apt-get update\nsudo apt-get install -y \\\n  binutils-gold \\\n  gcc \\\n  git \\\n  libcurl4-openssl-dev \\\n  libedit-dev \\\n  libicu-dev \\\n  libncurses-dev \\\n  libpython3-dev \\\n  libsqlite3-dev \\\n  libxml2-dev \\\n  pkg-config \\\n  tzdata \\\n  uuid-dev\n```\n\n## Download and Install Swift\n\n1. Find the latest Swift version for Debian:\n\n   Go to the [Swift.org download page](https://www.swift.org/download/) to find the latest Swift version compatible with Debian 12 (Bookworm).\n\n   Look for a tarball named something like `swift-<VERSION>-RELEASE-debian12.tar.gz` (e.g., `swift-6.0.3-RELEASE-debian12.tar.gz`).\n\n   The URL pattern is typically:\n   ```\n   https://download.swift.org/swift-<VERSION>-release/debian12/swift-<VERSION>-RELEASE/swift-<VERSION>-RELEASE-debian12.tar.gz\n   ```\n\n   Where `<VERSION>` is the Swift version number (e.g., `6.0.3`).\n\n2. Download the Swift binary for Debian 12:\n\n```bash\ncd /workspace\nwget https://download.swift.org/swift-6.0.3-release/debian12/swift-6.0.3-RELEASE/swift-6.0.3-RELEASE-debian12.tar.gz\n```\n\n3. Extract the archive:\n\n> **Note**: Make sure to install Swift in the `/workspace` directory, but outside the git repository to avoid committing the Swift binaries.\n\n4. Add Swift to your PATH by adding the following line to your `~/.bashrc` file:\n\n```bash\necho 'export PATH=/workspace/swift-6.0.3-RELEASE-debian12/usr/bin:$PATH' >> ~/.bashrc\nsource ~/.bashrc\n```\n\n> **Note**: Make sure to update the version number in the PATH to match the version you downloaded.\n\n## Verify Installation\n\nVerify that Swift is correctly installed by running:\n\n```bash\nswift --version\n```",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "swift-linux",
+                "swift-debian",
+                "swift-installation"
+              ]
+            },
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/swift-linux/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Install and configure Swift programming language on Debian Linux for server-side development. Use when building Swift applications on Linux or setting up a Swift development environment."
+          },
+          {
+            "name": "agent-sdk-builder",
+            "content": "# Agent Builder and Interviewer Role\n\nYou are an expert requirements gatherer and agent builder. You must progressively interview the user to understand what type of agent they are looking to build. You should ask one question at a time when interviewing to avoid overwhelming the user.\n\nPlease refer to the user's initial promot: {INITIAL_PROMPT}\n\nIf {INITIAL_PROMPT} is blank, your first interview question should be: \"Please provide a brief description of the type of agent you are looking to build.\"\n\n# Understanding the OpenHands Software Agent SDK\nAt the end of the interview, respond with a summary of the requirements. Then, proceed to thoroughly understand how the OpenHands Software Agent SDK works, it's various APIs, and examples. To do this:\n- First, research the OpenHands documentation which includes references to the Software Agent SDK: https://docs.openhands.dev/llms.txt\n- Then, clone the examples into a temporary workspace folder (under \"temp/\"): https://github.com/OpenHands/software-agent-sdk/tree/main/examples/01_standalone_sdk\n- Then, clone the SDK docs into the same temporary workspace folder: https://github.com/OpenHands/docs/tree/main/sdk\n\nAfter analyzing the OpenHands Agent SDK, you may optionally ask additional clarifying questions in case it's important for the technical design of the agent.\n\n# Generating the SDK Plan\nYou can then proceed to build a technical implementation plan based on the user requirements and your understanding of how the OpenHands Agent SDK works.\n- The plan should be stored in \"plan/SDK_PLAN.md\" from the root of the workspace.\n- A visual representation of how the agent should work based on the SDK_PLAN.md. This should look like a flow diagram with nodes and edges. This should be generated using Javascript, HTML, and CSS and then be rendered using the built-in web server. Store this in the plan/ directory.\n\n# Implementing the Plan\nAfter the plan is generated, please ask the user if they are ready to generate the SDK implementation. When they approve, please make sure the code is stored in the \"output/\" directory. Make sure the code provides logging that a user can see in the terminal. Ideally, the SDK is a single python file.\n\nAdditional guidelines:\n- Users can configure their LLM API Key using an environment variable named \"LLM_API_KEY\"\n- Unless otherwise specified, default to this model: openhands/claude-sonnet-4-5-20250929. This is configurable through the LLM_BASE_MODEL environment variable.\n\nIf the user didn't provide any of these variables, ask the user to provide them first before the agent can proceed with the task.",
+            "trigger": {
+              "type": "task",
+              "triggers": [
+                "/agent-builder",
+                "/agent-sdk-builder"
+              ]
+            },
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/agent-sdk-builder/SKILL.md",
+            "inputs": [
+              {
+                "name": "INITIAL_PROMPT",
+                "description": "Initial SDK requirements"
+              }
+            ],
+            "is_agentskills_format": true,
+            "description": "Guided workflow for building custom AI agents using the OpenHands Software Agent SDK. Use when you want to create a new agent through an interactive interview process that gathers requirements and generates implementation plans."
+          },
+          {
+            "name": "skill-creator",
+            "content": "# Skill Creator\n\nThis skill provides guidance for creating effective skills.\n\n## About Skills\n\nSkills are modular, self-contained packages that extend OpenHands's capabilities by providing\nspecialized knowledge, workflows, and tools. Think of them as \"onboarding guides\" for specific\ndomains or tasks\u2014they transform OpenHands from a general-purpose agent into a specialized agent\nequipped with procedural knowledge that no model can fully possess.\n\n### What Skills Provide\n\n1. Specialized workflows - Multi-step procedures for specific domains\n2. Tool integrations - Instructions for working with specific file formats or APIs\n3. Domain expertise - Company-specific knowledge, schemas, business logic\n4. Bundled resources - Scripts, references, and assets for complex and repetitive tasks\n\n## Core Principles\n\n### Concise is Key\n\nThe context window is a public good. Skills share the context window with everything else OpenHands needs: system prompt, conversation history, other Skills' metadata, and the actual user request.\n\n**Default assumption: OpenHands is already very smart.** Only add context OpenHands doesn't already have. Challenge each piece of information: \"Does OpenHands really need this explanation?\" and \"Does this paragraph justify its token cost?\"\n\nPrefer concise examples over verbose explanations.\n\n### Set Appropriate Degrees of Freedom\n\nMatch the level of specificity to the task's fragility and variability:\n\n**High freedom (text-based instructions)**: Use when multiple approaches are valid, decisions depend on context, or heuristics guide the approach.\n\n**Medium freedom (pseudocode or scripts with parameters)**: Use when a preferred pattern exists, some variation is acceptable, or configuration affects behavior.\n\n**Low freedom (specific scripts, few parameters)**: Use when operations are fragile and error-prone, consistency is critical, or a specific sequence must be followed.\n\nThink of OpenHands as exploring a path: a narrow bridge with cliffs needs specific guardrails (low freedom), while an open field allows many routes (high freedom).\n\n### Anatomy of a Skill\n\nEvery skill consists of a required SKILL.md file and optional bundled resources:\n\n```\nskill-name/\n\u251c\u2500\u2500 SKILL.md (required)\n\u2502   \u251c\u2500\u2500 YAML frontmatter metadata (required)\n\u2502   \u2502   \u251c\u2500\u2500 name: (required)\n\u2502   \u2502   \u2514\u2500\u2500 description: (required)\n\u2502   \u2514\u2500\u2500 Markdown instructions (required)\n\u2514\u2500\u2500 Bundled Resources (optional)\n    \u251c\u2500\u2500 scripts/          - Executable code (Python/Bash/etc.)\n    \u251c\u2500\u2500 references/       - Documentation intended to be loaded into context as needed\n    \u2514\u2500\u2500 assets/           - Files used in output (templates, icons, fonts, etc.)\n```\n\n#### SKILL.md (required)\n\nEvery SKILL.md consists of:\n\n- **Frontmatter** (YAML): Contains `name` and `description` fields. These are the only fields that OpenHands reads to determine when the skill gets used, thus it is very important to be clear and comprehensive in describing what the skill is, and when it should be used.\n- **Body** (Markdown): Instructions and guidance for using the skill. Only loaded AFTER the skill triggers (if at all).\n\n#### Bundled Resources (optional)\n\n##### Scripts (`scripts/`)\n\nExecutable code (Python/Bash/etc.) for tasks that require deterministic reliability or are repeatedly rewritten.\n\n- **When to include**: When the same code is being rewritten repeatedly or deterministic reliability is needed\n- **Example**: `scripts/rotate_pdf.py` for PDF rotation tasks\n- **Benefits**: Token efficient, deterministic, may be executed without loading into context\n- **Note**: Scripts may still need to be read by OpenHands for patching or environment-specific adjustments\n\n##### References (`references/`)\n\nDocumentation and reference material intended to be loaded as needed into context to inform OpenHands's process and thinking.\n\n- **When to include**: For documentation that OpenHands should reference while working\n- **Examples**: `references/finance.md` for financial schemas, `references/mnda.md` for company NDA template, `references/policies.md` for company policies, `references/api_docs.md` for API specifications\n- **Use cases**: Database schemas, API documentation, domain knowledge, company policies, detailed workflow guides\n- **Benefits**: Keeps SKILL.md lean, loaded only when OpenHands determines it's needed\n- **Best practice**: If files are large (>10k words), include grep search patterns in SKILL.md\n- **Avoid duplication**: Information should live in either SKILL.md or references files, not both. Prefer references files for detailed information unless it's truly core to the skill\u2014this keeps SKILL.md lean while making information discoverable without hogging the context window. Keep only essential procedural instructions and workflow guidance in SKILL.md; move detailed reference material, schemas, and examples to references files.\n\n##### Assets (`assets/`)\n\nFiles not intended to be loaded into context, but rather used within the output OpenHands produces.\n\n- **When to include**: When the skill needs files that will be used in the final output\n- **Examples**: `assets/logo.png` for brand assets, `assets/slides.pptx` for PowerPoint templates, `assets/frontend-template/` for HTML/React boilerplate, `assets/font.ttf` for typography\n- **Use cases**: Templates, images, icons, boilerplate code, fonts, sample documents that get copied or modified\n- **Benefits**: Separates output resources from documentation, enables OpenHands to use files without loading them into context\n\n#### What to Not Include in a Skill\n\nA skill should only contain essential files that directly support its functionality. Do NOT create extraneous documentation or auxiliary files, including:\n\n- README.md\n- INSTALLATION_GUIDE.md\n- QUICK_REFERENCE.md\n- CHANGELOG.md\n- etc.\n\nThe skill should only contain the information needed for an AI agent to do the job at hand. It should not contain auxilary context about the process that went into creating it, setup and testing procedures, user-facing documentation, etc. Creating additional documentation files just adds clutter and confusion.\n\n### Progressive Disclosure Design Principle\n\nSkills use a three-level loading system to manage context efficiently:\n\n1. **Metadata (name + description)** - Always in context (~100 words)\n2. **SKILL.md body** - When skill triggers (<5k words)\n3. **Bundled resources** - As needed by OpenHands (Unlimited because scripts can be executed without reading into context window)\n\n#### Progressive Disclosure Patterns\n\nKeep SKILL.md body to the essentials and under 500 lines to minimize context bloat. Split content into separate files when approaching this limit. When splitting out content into other files, it is very important to reference them from SKILL.md and describe clearly when to read them, to ensure the reader of the skill knows they exist and when to use them.\n\n**Key principle:** When a skill supports multiple variations, frameworks, or options, keep only the core workflow and selection guidance in SKILL.md. Move variant-specific details (patterns, examples, configuration) into separate reference files.\n\n**Pattern 1: High-level guide with references**\n\n```markdown\n# PDF Processing\n\n## Quick start\n\nExtract text with pdfplumber:\n[code example]\n\n## Advanced features\n\n- **Form filling**: See [FORMS.md](FORMS.md) for complete guide\n- **API reference**: See [REFERENCE.md](REFERENCE.md) for all methods\n- **Examples**: See [EXAMPLES.md](EXAMPLES.md) for common patterns\n```\n\nOpenHands loads FORMS.md, REFERENCE.md, or EXAMPLES.md only when needed.\n\n**Pattern 2: Domain-specific organization**\n\nFor Skills with multiple domains, organize content by domain to avoid loading irrelevant context:\n\n```\nbigquery-skill/\n\u251c\u2500\u2500 SKILL.md (overview and navigation)\n\u2514\u2500\u2500 reference/\n    \u251c\u2500\u2500 finance.md (revenue, billing metrics)\n    \u251c\u2500\u2500 sales.md (opportunities, pipeline)\n    \u251c\u2500\u2500 product.md (API usage, features)\n    \u2514\u2500\u2500 marketing.md (campaigns, attribution)\n```\n\nWhen a user asks about sales metrics, OpenHands only reads sales.md.\n\nSimilarly, for skills supporting multiple frameworks or variants, organize by variant:\n\n```\ncloud-deploy/\n\u251c\u2500\u2500 SKILL.md (workflow + provider selection)\n\u2514\u2500\u2500 references/\n    \u251c\u2500\u2500 aws.md (AWS deployment patterns)\n    \u251c\u2500\u2500 gcp.md (GCP deployment patterns)\n    \u2514\u2500\u2500 azure.md (Azure deployment patterns)\n```\n\nWhen the user chooses AWS, OpenHands only reads aws.md.\n\n**Pattern 3: Conditional details**\n\nShow basic content, link to advanced content:\n\n```markdown\n# DOCX Processing\n\n## Creating documents\n\nUse docx-js for new documents. See [DOCX-JS.md](DOCX-JS.md).\n\n## Editing documents\n\nFor simple edits, modify the XML directly.\n\n**For tracked changes**: See [REDLINING.md](REDLINING.md)\n**For OOXML details**: See [OOXML.md](OOXML.md)\n```\n\nOpenHands reads REDLINING.md or OOXML.md only when the user needs those features.\n\n**Important guidelines:**\n\n- **Avoid deeply nested references** - Keep references one level deep from SKILL.md. All reference files should link directly from SKILL.md.\n- **Structure longer reference files** - For files longer than 100 lines, include a table of contents at the top so OpenHands can see the full scope when previewing.\n\n## Skill Creation Process\n\nSkill creation involves these steps:\n\n1. Understand the skill with concrete examples\n2. Plan reusable skill contents (scripts, references, assets)\n3. Initialize the skill (run init_skill.py)\n4. Edit the skill (implement resources and write SKILL.md)\n5. Package the skill (run package_skill.py)\n6. Iterate based on real usage\n\nFollow these steps in order, skipping only if there is a clear reason why they are not applicable.\n\n### Step 1: Understanding the Skill with Concrete Examples\n\nSkip this step only when the skill's usage patterns are already clearly understood. It remains valuable even when working with an existing skill.\n\nTo create an effective skill, clearly understand concrete examples of how the skill will be used. This understanding can come from either direct user examples or generated examples that are validated with user feedback.\n\nFor example, when building an image-editor skill, relevant questions include:\n\n- \"What functionality should the image-editor skill support? Editing, rotating, anything else?\"\n- \"Can you give some examples of how this skill would be used?\"\n- \"I can imagine users asking for things like 'Remove the red-eye from this image' or 'Rotate this image'. Are there other ways you imagine this skill being used?\"\n- \"What would a user say that should trigger this skill?\"\n\nTo avoid overwhelming users, avoid asking too many questions in a single message. Start with the most important questions and follow up as needed for better effectiveness.\n\nConclude this step when there is a clear sense of the functionality the skill should support.\n\n### Step 2: Planning the Reusable Skill Contents\n\nTo turn concrete examples into an effective skill, analyze each example by:\n\n1. Considering how to execute on the example from scratch\n2. Identifying what scripts, references, and assets would be helpful when executing these workflows repeatedly\n\nExample: When building a `pdf-editor` skill to handle queries like \"Help me rotate this PDF,\" the analysis shows:\n\n1. Rotating a PDF requires re-writing the same code each time\n2. A `scripts/rotate_pdf.py` script would be helpful to store in the skill\n\nExample: When designing a `frontend-webapp-builder` skill for queries like \"Build me a todo app\" or \"Build me a dashboard to track my steps,\" the analysis shows:\n\n1. Writing a frontend webapp requires the same boilerplate HTML/React each time\n2. An `assets/hello-world/` template containing the boilerplate HTML/React project files would be helpful to store in the skill\n\nExample: When building a `big-query` skill to handle queries like \"How many users have logged in today?\" the analysis shows:\n\n1. Querying BigQuery requires re-discovering the table schemas and relationships each time\n2. A `references/schema.md` file documenting the table schemas would be helpful to store in the skill\n\nTo establish the skill's contents, analyze each concrete example to create a list of the reusable resources to include: scripts, references, and assets.\n\n### Step 3: Initializing the Skill\n\nAt this point, it is time to actually create the skill.\n\nSkip this step only if the skill being developed already exists, and iteration or packaging is needed. In this case, continue to the next step.\n\nWhen creating a new skill from scratch, always run the `init_skill.py` script. The script conveniently generates a new template skill directory that automatically includes everything a skill requires, making the skill creation process much more efficient and reliable.\n\nUsage:\n\n```bash\nscripts/init_skill.py <skill-name> --path <output-directory>\n```\n\nThe script:\n\n- Creates the skill directory at the specified path\n- Generates a SKILL.md template with proper frontmatter and TODO placeholders\n- Creates example resource directories: `scripts/`, `references/`, and `assets/`\n- Adds example files in each directory that can be customized or deleted\n\nAfter initialization, customize or remove the generated SKILL.md and example files as needed.\n\n### Step 4: Edit the Skill\n\nWhen editing the (newly-generated or existing) skill, remember that the skill is being created for another instance of OpenHands to use. Include information that would be beneficial and non-obvious to OpenHands. Consider what procedural knowledge, domain-specific details, or reusable assets would help another OpenHands instance execute these tasks more effectively.\n\n#### Learn Proven Design Patterns\n\nConsult these helpful guides based on your skill's needs:\n\n- **Multi-step processes**: See references/workflows.md for sequential workflows and conditional logic\n- **Specific output formats or quality standards**: See references/output-patterns.md for template and example patterns\n\nThese files contain established best practices for effective skill design.\n\n#### Start with Reusable Skill Contents\n\nTo begin implementation, start with the reusable resources identified above: `scripts/`, `references/`, and `assets/` files. Note that this step may require user input. For example, when implementing a `brand-guidelines` skill, the user may need to provide brand assets or templates to store in `assets/`, or documentation to store in `references/`.\n\nAdded scripts must be tested by actually running them to ensure there are no bugs and that the output matches what is expected. If there are many similar scripts, only a representative sample needs to be tested to ensure confidence that they all work while balancing time to completion.\n\nAny example files and directories not needed for the skill should be deleted. The initialization script creates example files in `scripts/`, `references/`, and `assets/` to demonstrate structure, but most skills won't need all of them.\n\n#### Update SKILL.md\n\n**Writing Guidelines:** Always use imperative/infinitive form.\n\n##### Frontmatter\n\nWrite the YAML frontmatter with `name` and `description`:\n\n- `name`: The skill name\n- `description`: This is the primary triggering mechanism for your skill, and helps OpenHands understand when to use the skill.\n  - Include both what the Skill does and specific triggers/contexts for when to use it.\n  - Include all \"when to use\" information here - Not in the body. The body is only loaded after triggering, so \"When to Use This Skill\" sections in the body are not helpful to OpenHands.\n  - Example description for a `docx` skill: \"Comprehensive document creation, editing, and analysis with support for tracked changes, comments, formatting preservation, and text extraction. Use when OpenHands needs to work with professional documents (.docx files) for: (1) Creating new documents, (2) Modifying or editing content, (3) Working with tracked changes, (4) Adding comments, or any other document tasks\"\n\nDo not include any other fields in YAML frontmatter.\n\n##### Body\n\nWrite instructions for using the skill and its bundled resources.\n\n### Step 5: Packaging a Skill\n\nOnce development of the skill is complete, it must be packaged into a distributable .skill file that gets shared with the user. The packaging process automatically validates the skill first to ensure it meets all requirements:\n\n```bash\nscripts/package_skill.py <path/to/skill-folder>\n```\n\nOptional output directory specification:\n\n```bash\nscripts/package_skill.py <path/to/skill-folder> ./dist\n```\n\nThe packaging script will:\n\n1. **Validate** the skill automatically, checking:\n\n   - YAML frontmatter format and required fields\n   - Skill naming conventions and directory structure\n   - Description completeness and quality\n   - File organization and resource references\n\n2. **Package** the skill if validation passes, creating a .skill file named after the skill (e.g., `my-skill.skill`) that includes all files and maintains the proper directory structure for distribution. The .skill file is a zip file with a .skill extension.\n\nIf validation fails, the script will report the errors and exit without creating a package. Fix any validation errors and run the packaging command again.\n\n### Step 6: Iterate\n\nAfter testing the skill, users may request improvements. Often this happens right after using the skill, with fresh context of how the skill performed.\n\n**Iteration workflow:**\n\n1. Use the skill on real tasks\n2. Notice struggles or inefficiencies\n3. Identify how SKILL.md or bundled resources should be updated\n4. Implement changes and test again",
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/skill-creator/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends OpenHands's capabilities with specialized knowledge, workflows, or tool integrations.",
+            "license": "Complete terms in LICENSE.txt",
+            "resources": {
+              "skill_root": "/Users/atineose/.openhands/cache/skills/public-skills/skills/skill-creator",
+              "scripts": [
+                "init_skill.py",
+                "package_skill.py",
+                "quick_validate.py"
+              ],
+              "references": [
+                "output-patterns.md",
+                "workflows.md"
+              ],
+              "assets": []
+            }
+          },
+          {
+            "name": "ssh",
+            "content": "# SSH Skill\n\nThis skill provides capabilities for establishing and managing SSH connections to remote machines.\n\n## Capabilities\n\n- Establish SSH connections using password or key-based authentication\n- Generate and manage SSH key pairs\n- Configure SSH for easier connections\n- Execute commands on remote machines\n- Transfer files between local and remote machines\n- Manage SSH configurations and known hosts\n\n## Authentication Methods\n\n### Password Authentication\n\n```bash\nssh username@hostname\n```\n\nWhen prompted, you should ask the user for their password or a private key.\n\n### Key-Based Authentication\n\nGenerate a new SSH key pair:\n```bash\nssh-keygen -t ed25519 -f ~/.ssh/key_name -C \"comment\" -N \"\"\n```\n\nCopy the public key to the remote server:\n```bash\nssh-copy-id -i ~/.ssh/key_name.pub username@hostname\n```\n\nConnect using the private key:\n```bash\nssh -i ~/.ssh/key_name username@hostname\n```\n\n## SSH Configuration\n\nCreate or edit the SSH config file for easier connections:\n```bash\nmkdir -p ~/.ssh\ncat > ~/.ssh/config << 'EOF'\nHost alias\n    HostName hostname_or_ip\n    User username\n    IdentityFile ~/.ssh/key_name\n    Port 22\n    ServerAliveInterval 60\nEOF\nchmod 600 ~/.ssh/config\n```\n\nThen connect using the alias:\n```bash\nssh alias\n```\n\n## Common SSH Options\n\n- `-p PORT`: Connect to a specific port\n- `-X`: Enable X11 forwarding\n- `-L local_port:remote_host:remote_port`: Set up local port forwarding\n- `-R remote_port:local_host:local_port`: Set up remote port forwarding\n- `-N`: Do not execute a remote command (useful for port forwarding)\n- `-f`: Run in background\n- `-v`: Verbose mode (add more v's for increased verbosity)\n\n## File Transfer with SCP\n\nCopy a file to the remote server:\n```bash\nscp /path/to/local/file username@hostname:/path/to/remote/directory/\n```\n\nCopy a file from the remote server:\n```bash\nscp username@hostname:/path/to/remote/file /path/to/local/directory/\n```\n\nCopy a directory recursively:\n```bash\nscp -r /path/to/local/directory username@hostname:/path/to/remote/directory/\n```\n\n## SSH Agent\n\nStart the SSH agent:\n```bash\neval \"$(ssh-agent -s)\"\n```\n\nAdd a key to the agent:\n```bash\nssh-add ~/.ssh/key_name\n```\n\n## Troubleshooting\n\n- Check SSH service status on remote: `systemctl status sshd`\n- Verify SSH port is open: `nc -zv hostname 22`\n- Debug connection issues: `ssh -vvv username@hostname`\n- Check permissions: SSH private keys should have 600 permissions (`chmod 600 ~/.ssh/key_name`)\n- Verify known_hosts: If host key changed, remove the old entry with `ssh-keygen -R hostname`\n\n## Secure SSH Key Management\n\n### Local Storage with Proper Permissions\n\nThe most basic approach is to ensure proper file permissions:\n\n```bash\n# Set correct permissions for private keys\nchmod 600 ~/.ssh/id_ed25519\n# Set correct permissions for public keys\nchmod 644 ~/.ssh/id_ed25519.pub\n# Set correct permissions for SSH directory\nchmod 700 ~/.ssh\n```",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "ssh",
+                "remote server",
+                "remote machine",
+                "remote host",
+                "remote connection",
+                "secure shell",
+                "ssh keys"
+              ]
+            },
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/ssh/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Establish and manage SSH connections to remote machines, including key generation, configuration, and file transfers. Use when connecting to remote servers, executing remote commands, or transferring files via SCP."
+          },
+          {
+            "name": "github",
+            "content": "You have access to an environment variable, `GITHUB_TOKEN`, which allows you to interact with\nthe GitHub API.\n\n<IMPORTANT>\nYou can use `curl` with the `GITHUB_TOKEN` to interact with GitHub's API.\nALWAYS use the GitHub API for operations instead of a web browser.\nALWAYS use the `create_pr` tool to open a pull request\nIf the user asks you to check GitHub Actions status, first try to use `gh` to work with workflows, and only fallback to basic API calls if that fails.\nExamples:\n- `gh run watch` (https://cli.github.com/manual/gh_run_watch) to monitor workflow runs\n- `gh pr checks 200 --watch --interval 10` to check until completed.\n</IMPORTANT>\n\nIf you encounter authentication issues when pushing to GitHub (such as password prompts or permission errors), the old token may have expired. In such case, update the remote URL to include the current token: `git remote set-url origin https://${GITHUB_TOKEN}@github.com/username/repo.git`\n\nHere are some instructions for pushing, but ONLY do this if the user asks you to:\n* NEVER push directly to the `main` or `master` branch\n* Git config (username and email) is pre-set. Do not modify.\n* You may already be on a branch starting with `openhands-workspace`. Create a new branch with a better name before pushing.\n* Use the `create_pr` tool to create a pull request, if you haven't already\n* Once you've created your own branch or a pull request, continue to update it. Do NOT create a new one unless you are explicitly asked to. Update the PR title and description as necessary, but don't change the branch name.\n* Use the main branch as the base branch, unless the user requests otherwise\n* After opening or updating a pull request, send the user a short message with a link to the pull request.\n* Do NOT mark a pull request as ready to review unless the user explicitly says so\n* Do all of the above in as few steps as possible. E.g. you could push changes with one step by running the following bash commands:\n```bash\ngit remote -v && git branch # to find the current org, repo and branch\ngit checkout -b create-widget && git add . && git commit -m \"Create widget\" && git push -u origin create-widget\n```",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "github",
+                "git"
+              ]
+            },
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/github/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Interact with GitHub repositories, pull requests, issues, and workflows using the GITHUB_TOKEN environment variable and GitHub CLI. Use when working with code hosted on GitHub or managing GitHub resources."
+          },
+          {
+            "name": "datadog",
+            "content": "# Datadog\n\n<IMPORTANT>\nBefore performing any Datadog operations, first check if the required environment variables are set:\n\n```bash\n[ -n \"$DD_API_KEY\" ] && echo \"DD_API_KEY is set\" || echo \"DD_API_KEY is NOT set\"\n[ -n \"$DD_APP_KEY\" ] && echo \"DD_APP_KEY is set\" || echo \"DD_APP_KEY is NOT set\"\n[ -n \"$DD_SITE\" ] && echo \"DD_SITE is set\" || echo \"DD_SITE is NOT set\"\n```\n\nIf any of these variables are missing, ask the user to provide them before proceeding:\n- **DD_API_KEY**: Datadog API key\n- **DD_APP_KEY**: Datadog Application key\n- **DD_SITE**: Datadog site (e.g., `datadoghq.com`, `datadoghq.eu`, `us3.datadoghq.com`)\n</IMPORTANT>\n\n## Authentication Headers\n\n```bash\n-H \"DD-API-KEY: ${DD_API_KEY}\" \\\n-H \"DD-APPLICATION-KEY: ${DD_APP_KEY}\" \\\n-H \"Content-Type: application/json\"\n```\n\n## Query Logs\n\n```bash\ncurl -s -X POST \"https://api.${DD_SITE}/api/v2/logs/events/search\" \\\n  -H \"DD-API-KEY: ${DD_API_KEY}\" \\\n  -H \"DD-APPLICATION-KEY: ${DD_APP_KEY}\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"filter\": {\n      \"query\": \"service:my-service status:error\",\n      \"from\": \"now-1h\",\n      \"to\": \"now\"\n    },\n    \"sort\": \"-timestamp\",\n    \"page\": {\"limit\": 50}\n  }' | jq .\n```\n\n## Query Metrics\n\n```bash\ncurl -s -G \"https://api.${DD_SITE}/api/v1/query\" \\\n  -H \"DD-API-KEY: ${DD_API_KEY}\" \\\n  -H \"DD-APPLICATION-KEY: ${DD_APP_KEY}\" \\\n  --data-urlencode \"query=avg:system.cpu.user{*}\" \\\n  --data-urlencode \"from=$(date -d '1 hour ago' +%s)\" \\\n  --data-urlencode \"to=$(date +%s)\" | jq .\n```\n\n## Query APM Traces\n\n```bash\ncurl -s -X POST \"https://api.${DD_SITE}/api/v2/spans/events/search\" \\\n  -H \"DD-API-KEY: ${DD_API_KEY}\" \\\n  -H \"DD-APPLICATION-KEY: ${DD_APP_KEY}\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"filter\": {\n      \"query\": \"service:my-service\",\n      \"from\": \"now-1h\",\n      \"to\": \"now\"\n    },\n    \"sort\": \"-timestamp\",\n    \"page\": {\"limit\": 25}\n  }' | jq .\n```\n\n## List Monitors\n\n```bash\ncurl -s -G \"https://api.${DD_SITE}/api/v1/monitor\" \\\n  -H \"DD-API-KEY: ${DD_API_KEY}\" \\\n  -H \"DD-APPLICATION-KEY: ${DD_APP_KEY}\" | jq .\n```\n\n## Documentation\n\n- [Logs API](https://docs.datadoghq.com/api/latest/logs/)\n- [Metrics API](https://docs.datadoghq.com/api/latest/metrics/)\n- [APM/Tracing API](https://docs.datadoghq.com/api/latest/tracing/)\n- [Monitors API](https://docs.datadoghq.com/api/latest/monitors/)\n- [Events API](https://docs.datadoghq.com/api/latest/events/)\n- [Dashboards API](https://docs.datadoghq.com/api/latest/dashboards/)",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "datadog"
+              ]
+            },
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/datadog/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Query and analyze Datadog logs, metrics, APM traces, and monitors using the Datadog API. Use when debugging production issues, monitoring application performance, or investigating alerts."
+          },
+          {
+            "name": "onboarding-agent",
+            "content": "# First-time User Conversation with OpenHands\n\n## Skill purpose\nIn **<= 5 progressive questions**, interview the user to identify their coding goal and constraints, then generate a **concrete, step-by-step plan** that maximizes the likelihood of a **successful pull request (PR)**.\nFinish by asking: **\u201cDo you want me to execute the plan?\u201d**\n\n## Guardrails\n- Ask **no more than 5 questions total** (stop early if you have enough info).\n- **Progressive:** each next question builds on the previous answer.\n- Keep questions concise (**<= 2 sentences** each). Offer options when useful.\n- If the user is uncertain, propose **reasonable defaults** and continue.\n- Stop once you have enough info to create a **specific PR-ready plan**.\n- NEVER push directly to the main or master branch. Do not automatically commit any changes to the repo.\n\n## Interview Flow\n\n### **First question - always start here**\n> \u201cGreat \u2014 what are you trying to build or change, in one or two sentences?\n> (e.g., add an endpoint, fix a bug, write a script, tweak UI)\u201d\n\n### **Dynamic follow-up questions**\nChoose the next question based on what's most relevant from the last reply.\nUse one at a time - no more than 5 total.\n\n#### 1. Repo & Runtime Context\n- \u201cWhere will this live? Repo/name or link, language/runtime, and framework (if any)?\u201d\n- \u201cHow do you run and test locally? (package manager, build tool, dev server, docker compose?)\u201d\n\n#### 2. Scope & Acceptance Criteria\n- \u201cWhat's the smallest valuable change we can ship first? Describe the exact behavior or API/CLI/UI change and how we\u2019ll verify it.\u201d\n- \u201cAny non-negotiables? (performance, accessibility, security, backwards-compatibility)\u201d\n\n#### 3. Interfaces & Data\n- \u201cWhich interfaces are affected? (files, modules, routes, DB tables, events, components)\u201d\n- \u201cDo we need new schema/DTOs, migrations, or mock data?\u201d\n\n#### 4. Testing & Tooling\n- \u201cWhat tests should prove it works (unit/integration/e2e)? Which test framework, and any CI requirements?\u201d\n\n#### 5. Final Clarifier\nIf critical information is missing, ask **one short, blocking question**. If not, skip directly to the plan.\n\n## Plan Generation (After Questions)\nProduce a **PR-ready plan** customized to the user\u2019s answers, in this structure:\n\n### 1. Goal & Success Criteria\n- One-sentence goal.\n- Bullet **acceptance tests** (observable behaviors or API/CLI examples).\n\n### 2. Scope of Change\n- Files/modules to add or modify (with **paths** and stubs if known).\n- Public interfaces (function signatures, routes, migrations) with brief specs.\n\n### 3. Implementation Steps\n- Branch creation and environment setup commands.\n- Code tasks broken into <= 8 bite-sized commits.\n- Any scaffolding or codegen commands.\n\n### 4. Testing Plan\n- Tests to write, where they live, and example test names.\n- How to run them locally and in CI (with exact commands).\n- Sample fixtures/mocks or seed data.\n\n### 5. Quality Gates & Tooling\n- Lint/format/type-check commands.\n- Security/performance checks if relevant.\n- Accessibility checks for UI work.\n\n### 6. Risks & Mitigations\n- Top 3 risks + how to detect or rollback.\n- Mention feature flag/env toggle if applicable.\n\n### 7. Timeline & Next Steps\n- Rough estimate (S/M/L) with ordered sequence.\n- Call out anything **explicitly out of scope**.\n\n## Final Question\n**\u201cDo you want me to execute the plan?\u201d**",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "/onboard"
+              ]
+            },
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/onboarding-agent/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Interactive onboarding workflow that interviews users to understand their coding goals and generates PR-ready implementation plans. Use when starting a new development task to ensure clear requirements and structured execution."
+          },
+          {
+            "name": "agent-memory",
+            "content": "* Repository memory: Use AGENTS.md in each repository root to store and access important information.\n  - If this file exists, it will be added to your context automatically.\n  - If missing, you should create it unless the user has explicitly asked you to not do so.\n\n* Store and maintain **general knowledge** that will be helpful for most future tasks:\n  1. Repository structure\n  2. Common commands (build, lint, test, pre-commit, etc.)\n  3. Code style preferences\n  4. Workflows and best practices\n  5. Any other repository-specific knowledge you learn\n\n* IMPORTANT: ONLY LOG the information that would be helpful for different future tasks, for example, how to configure the settings, how to setup the repository. Do NOT add issue-specific information (e.g., what specific error you have ran into and how you fix it).\n\n* When adding new information:\n  - ALWAYS ask for user confirmation first by listing the exact items (numbered 1, 2, 3, etc.) you plan to save to repo.md\n  - Only save the items the user approves (they may ask you to save a subset)\n  - Ensure it integrates nicely with existing knowledge in repo.md\n  - Reorganize the content if needed to maintain clarity and organization\n  - Group related information together under appropriate sections or headings\n  - If you've only explored a portion of the codebase, clearly note this limitation in the repository structure documentation\n  - If you don't know the essential commands for working with the repository, such as lint or typecheck, ask the user and suggest adding them to repo.md for future reference (with permission)\n\nWhen you receive this message, please review and summarize your recent actions and observations, then present a list of valuable information that should be saved in AGENTS.md to the user.",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "/remember"
+              ]
+            },
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/agent-memory/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Persist and retrieve repository-specific knowledge using AGENTS.md files. Use when you want to save important information about a codebase (build commands, code style, workflows) for future sessions."
+          },
+          {
+            "name": "frontend-design",
+            "content": "This skill guides creation of distinctive, production-grade frontend interfaces that avoid generic \"AI slop\" aesthetics. Implement real working code with exceptional attention to aesthetic details and creative choices.\n\nThe user provides frontend requirements: a component, page, application, or interface to build. They may include context about the purpose, audience, or technical constraints.\n\n## Design Thinking\n\nBefore coding, understand the context and commit to a BOLD aesthetic direction:\n- **Purpose**: What problem does this interface solve? Who uses it?\n- **Tone**: Pick an extreme: brutally minimal, maximalist chaos, retro-futuristic, organic/natural, luxury/refined, playful/toy-like, editorial/magazine, brutalist/raw, art deco/geometric, soft/pastel, industrial/utilitarian, etc. There are so many flavors to choose from. Use these for inspiration but design one that is true to the aesthetic direction.\n- **Constraints**: Technical requirements (framework, performance, accessibility).\n- **Differentiation**: What makes this UNFORGETTABLE? What's the one thing someone will remember?\n\n**CRITICAL**: Choose a clear conceptual direction and execute it with precision. Bold maximalism and refined minimalism both work - the key is intentionality, not intensity.\n\nThen implement working code (HTML/CSS/JS, React, Vue, etc.) that is:\n- Production-grade and functional\n- Visually striking and memorable\n- Cohesive with a clear aesthetic point-of-view\n- Meticulously refined in every detail\n\n## Frontend Aesthetics Guidelines\n\nFocus on:\n- **Typography**: Choose fonts that are beautiful, unique, and interesting. Avoid generic fonts like Arial and Inter; opt instead for distinctive choices that elevate the frontend's aesthetics; unexpected, characterful font choices. Pair a distinctive display font with a refined body font.\n- **Color & Theme**: Commit to a cohesive aesthetic. Use CSS variables for consistency. Dominant colors with sharp accents outperform timid, evenly-distributed palettes.\n- **Motion**: Use animations for effects and micro-interactions. Prioritize CSS-only solutions for HTML. Use Motion library for React when available. Focus on high-impact moments: one well-orchestrated page load with staggered reveals (animation-delay) creates more delight than scattered micro-interactions. Use scroll-triggering and hover states that surprise.\n- **Spatial Composition**: Unexpected layouts. Asymmetry. Overlap. Diagonal flow. Grid-breaking elements. Generous negative space OR controlled density.\n- **Backgrounds & Visual Details**: Create atmosphere and depth rather than defaulting to solid colors. Add contextual effects and textures that match the overall aesthetic. Apply creative forms like gradient meshes, noise textures, geometric patterns, layered transparencies, dramatic shadows, decorative borders, custom cursors, and grain overlays.\n\nNEVER use generic AI-generated aesthetics like overused font families (Inter, Roboto, Arial, system fonts), cliched color schemes (particularly purple gradients on white backgrounds), predictable layouts and component patterns, and cookie-cutter design that lacks context-specific character.\n\nInterpret creatively and make unexpected choices that feel genuinely designed for the context. No design should be the same. Vary between light and dark themes, different fonts, different aesthetics. NEVER converge on common choices (Space Grotesk, for example) across generations.\n\n**IMPORTANT**: Match implementation complexity to the aesthetic vision. Maximalist designs need elaborate code with extensive animations and effects. Minimalist or refined designs need restraint, precision, and careful attention to spacing, typography, and subtle details. Elegance comes from executing the vision well.\n\nRemember: OpenHands is capable of extraordinary creative work. Don't hold back, show what can truly be created when thinking outside the box and committing fully to a distinctive vision.",
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/frontend-design/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautifying any web UI). Generates creative, polished code and UI design that avoids generic AI aesthetics.",
+            "license": "Complete terms in LICENSE.txt"
+          },
+          {
+            "name": "bitbucket",
+            "content": "You have access to an environment variable, `BITBUCKET_TOKEN`, which allows you to interact with\nthe Bitbucket API.\n\n<IMPORTANT>\nYou can use `curl` with the `BITBUCKET_TOKEN` to interact with Bitbucket's API.\nALWAYS use the Bitbucket API for operations instead of a web browser.\nALWAYS use the `create_bitbucket_pr` tool to open a pull request\n</IMPORTANT>\n\nIf you encounter authentication issues when pushing to Bitbucket (such as password prompts or permission errors), the old token may have expired. In such case, update the remote URL to include the current token: `git remote set-url origin https://x-token-auth:${BITBUCKET_TOKEN}@bitbucket.org/username/repo.git`\n\nHere are some instructions for pushing, but ONLY do this if the user asks you to:\n* NEVER push directly to the `main` or `master` branch\n* Git config (username and email) is pre-set. Do not modify.\n* You may already be on a branch starting with `openhands-workspace`. Create a new branch with a better name before pushing.\n* Use the `create_bitbucket_pr` tool to create a pull request, if you haven't already\n* Once you've created your own branch or a pull request, continue to update it. Do NOT create a new one unless you are explicitly asked to. Update the PR title and description as necessary, but don't change the branch name.\n* Use the main branch as the base branch, unless the user requests otherwise\n* After opening or updating a pull request, send the user a short message with a link to the pull request.\n* Do NOT mark a pull request as ready to review unless the user explicitly says so\n* Do all of the above in as few steps as possible. E.g. you could push changes with one step by running the following bash commands:\n```bash\ngit remote -v && git branch # to find the current org, repo and branch\ngit checkout -b create-widget && git add . && git commit -m \"Create widget\" && git push -u origin create-widget\n```",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "bitbucket",
+                "git"
+              ]
+            },
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/bitbucket/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Interact with Bitbucket repositories and pull requests using the BITBUCKET_TOKEN environment variable. Use when working with code hosted on Bitbucket or managing Bitbucket resources via API."
+          },
+          {
+            "name": "kubernetes",
+            "content": "# Kubernetes Local Development with KIND\n\n## KIND Installation and Setup\n\nKIND (Kubernetes IN Docker) is a tool for running local Kubernetes clusters using Docker containers as nodes. It's designed for testing Kubernetes applications locally.\n\nIMPORTANT: Before you proceed with installation, make sure you have docker installed locally.\n\n### Installation\n\nTo install KIND on a Debian/Ubuntu system:\n\n```bash\n# Download KIND binary\ncurl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.22.0/kind-linux-amd64\n# Make it executable\nchmod +x ./kind\n# Move to a directory in your PATH\nsudo mv ./kind /usr/local/bin/\n```\n\nTo install kubectl:\n\n```bash\n# Download kubectl\ncurl -LO \"https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl\"\n# Make it executable\nchmod +x kubectl\n# Move to a directory in your PATH\nsudo mv ./kubectl /usr/local/bin/\n```\n\n### Creating a Cluster\n\nCreate a basic KIND cluster:\n\n```bash\nkind create cluster\n```",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "kubernetes",
+                "k8s",
+                "kube"
+              ]
+            },
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/kubernetes/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Set up and manage local Kubernetes clusters using KIND (Kubernetes IN Docker). Use when testing Kubernetes applications locally or developing cloud-native workloads."
+          },
+          {
+            "name": "releasenotes",
+            "content": "Generate a changelog for all changes from the most recent release until now.\n\n## Steps\n1. Find the most recent release tag using `git tag --sort=-creatordate`\n2. Get commits and merged PRs since that tag\n3. Look at previous releases in this repo to match their format and style\n4. Categorize changes into sections: Breaking Changes, Added, Changed, Fixed, Notes\n5. Focus on user-facing changes (features, important bug fixes, breaking changes)\n6. Include PR links and contributor attribution\n\n## Output\nPresent the changelog in a markdown code block, ready to copy-paste into a GitHub release.",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "/releasenotes"
+              ]
+            },
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/releasenotes/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Generate formatted changelogs from git history since the last release tag. Use when preparing release notes that categorize changes into breaking changes, features, fixes, and other sections."
+          },
+          {
+            "name": "jupyter",
+            "content": "# Jupyter Notebook Guide\n\nNotebooks are JSON files. Cells are in `nb['cells']`, each has `source` (list of strings) and `cell_type` ('code', 'markdown', or 'raw').\n\n## Modifying Notebooks\n```python\nimport json\nwith open('notebook.ipynb') as f:\n    nb = json.load(f)\n# Modify nb['cells'][i]['source'], then:\nwith open('notebook.ipynb', 'w') as f:\n    json.dump(nb, f, indent=1)\n```\n\n## Executing & Converting\n```bash\njupyter nbconvert --to notebook --execute --inplace notebook.ipynb  # Execute in place\njupyter nbconvert --to html notebook.ipynb      # Convert to HTML\njupyter nbconvert --to script notebook.ipynb    # Convert to Python\njupyter nbconvert --to markdown notebook.ipynb  # Convert to Markdown\n```\n\n## Finding Code\n```bash\ngrep -n \"search_term\" notebook.ipynb\n```\n\n## Cell Structure\n```python\n# Code cell\n{\"cell_type\": \"code\", \"execution_count\": None, \"metadata\": {}, \"outputs\": [], \"source\": [\"code\\n\"]}\n# Markdown cell\n{\"cell_type\": \"markdown\", \"metadata\": {}, \"source\": [\"# Title\\n\"]}\n```\n\n## Clear Outputs\n```python\nfor cell in nb['cells']:\n    if cell['cell_type'] == 'code':\n        cell['outputs'] = []\n        cell['execution_count'] = None\n```",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "ipynb",
+                "jupyter"
+              ]
+            },
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/jupyter/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Read, modify, execute, and convert Jupyter notebooks programmatically. Use when working with .ipynb files for data science workflows, including editing cells, clearing outputs, or converting to other formats."
+          },
+          {
+            "name": "npm",
+            "content": "When using npm to install packages, you will not be able to use an interactive shell, and it may be hard to confirm your actions.\nAs an alternative, you can pipe in the output of the unix \"yes\" command to confirm your actions.",
+            "trigger": {
+              "type": "keyword",
+              "keywords": [
+                "npm"
+              ]
+            },
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/npm/SKILL.md",
+            "inputs": [],
+            "is_agentskills_format": true,
+            "description": "Handle npm package installation in non-interactive environments by piping confirmations. Use when installing Node.js packages that require user confirmation prompts."
+          },
+          {
+            "name": "skills/skill-creator/references/workflows",
+            "content": "# Workflow Patterns\n\n## Sequential Workflows\n\nFor complex tasks, break operations into clear, sequential steps. It is often helpful to give OpenHands an overview of the process towards the beginning of SKILL.md:\n\n```markdown\nFilling a PDF form involves these steps:\n\n1. Analyze the form (run analyze_form.py)\n2. Create field mapping (edit fields.json)\n3. Validate mapping (run validate_fields.py)\n4. Fill the form (run fill_form.py)\n5. Verify output (run verify_output.py)\n```\n\n## Conditional Workflows\n\nFor tasks with branching logic, guide OpenHands through decision points:\n\n```markdown\n1. Determine the modification type:\n   **Creating new content?** \u2192 Follow \"Creation workflow\" below\n   **Editing existing content?** \u2192 Follow \"Editing workflow\" below\n\n2. Creation workflow: [steps]\n3. Editing workflow: [steps]\n```",
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/skill-creator/references/workflows.md",
+            "inputs": [],
+            "is_agentskills_format": false
+          },
+          {
+            "name": "skills/skill-creator/references/output-patterns",
+            "content": "# Output Patterns\n\nUse these patterns when skills need to produce consistent, high-quality output.\n\n## Template Pattern\n\nProvide templates for output format. Match the level of strictness to your needs.\n\n**For strict requirements (like API responses or data formats):**\n\n```markdown\n## Report structure\n\nALWAYS use this exact template structure:\n\n# [Analysis Title]\n\n## Executive summary\n[One-paragraph overview of key findings]\n\n## Key findings\n- Finding 1 with supporting data\n- Finding 2 with supporting data\n- Finding 3 with supporting data\n\n## Recommendations\n1. Specific actionable recommendation\n2. Specific actionable recommendation\n```\n\n**For flexible guidance (when adaptation is useful):**\n\n```markdown\n## Report structure\n\nHere is a sensible default format, but use your best judgment:\n\n# [Analysis Title]\n\n## Executive summary\n[Overview]\n\n## Key findings\n[Adapt sections based on what you discover]\n\n## Recommendations\n[Tailor to the specific context]\n\nAdjust sections as needed for the specific analysis type.\n```\n\n## Examples Pattern\n\nFor skills where output quality depends on seeing examples, provide input/output pairs:\n\n```markdown\n## Commit message format\n\nGenerate commit messages following these examples:\n\n**Example 1:**\nInput: Added user authentication with JWT tokens\nOutput:\n```\nfeat(auth): implement JWT-based authentication\n\nAdd login endpoint and token validation middleware\n```\n\n**Example 2:**\nInput: Fixed bug where dates displayed incorrectly in reports\nOutput:\n```\nfix(reports): correct date formatting in timezone conversion\n\nUse UTC timestamps consistently across report generation\n```\n\nFollow this style: type(scope): brief description, then detailed explanation.\n```\n\nExamples help OpenHands understand the desired style and level of detail more clearly than descriptions alone.",
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/skill-creator/references/output-patterns.md",
+            "inputs": [],
+            "is_agentskills_format": false
+          },
+          {
+            "name": "skills/readiness-report/references/criteria",
+            "content": "# Agent Readiness Criteria\n\nComplete reference of all 81 criteria evaluated across nine technical pillars.\n\n## Criteria Format\n\nEach criterion is binary (pass/fail) and includes:\n- **ID**: Unique identifier (snake_case)\n- **Level**: Maturity level (1-5) where criterion is evaluated\n- **Detection**: How to check if the criterion is met\n- **Impact**: What happens when this criterion fails\n\n---\n\n## 1. Style & Validation\n\nAutomated tools that catch bugs instantly. Without them, agents waste cycles on syntax errors and style drift.\n\n| Criterion | Level | Detection | Impact |\n|-----------|-------|-----------|--------|\n| `formatter` | 1 | Prettier, Black, Ruff format, gofmt config exists | Agent submits code with formatting issues, waits for CI, fixes blindly |\n| `lint_config` | 1 | ESLint, Ruff, golangci-lint, or language-specific linter configured | Style inconsistencies accumulate, harder to review |\n| `type_check` | 1 | TypeScript strict, mypy, Go (static by default) | Type errors caught late in CI instead of immediately |\n| `strict_typing` | 2 | TypeScript strict:true, mypy strict=true | Partial typing allows bugs to slip through |\n| `pre_commit_hooks` | 2 | .pre-commit-config.yaml or Husky config | Checks run in CI instead of locally, slower feedback |\n| `naming_consistency` | 2 | Linter rules or documented conventions | Inconsistent names make codebase harder to navigate |\n| `large_file_detection` | 2 | Git LFS, pre-commit check-added-large-files | Large files bloat repository, slow clones |\n| `code_modularization` | 3 | import-linter, Nx boundaries, Bazel modules | Architecture degrades over time |\n| `cyclomatic_complexity` | 3 | gocyclo, lizard, radon, SonarQube | Complex functions harder to understand and modify |\n| `dead_code_detection` | 3 | vulture, knip, deadcode in CI | Unused code clutters codebase |\n| `duplicate_code_detection` | 3 | jscpd, PMD CPD, SonarQube | Duplicated code increases maintenance burden |\n| `tech_debt_tracking` | 4 | TODO scanner, SonarQube, linter TODO rules | Tech debt accumulates without visibility |\n| `n_plus_one_detection` | 4 | nplusone, bullet gem, query analyzer | Performance issues in database queries |\n\n---\n\n## 2. Build System\n\nFast, reliable builds enable rapid iteration. Slow CI kills agent productivity.\n\n| Criterion | Level | Detection | Impact |\n|-----------|-------|-----------|--------|\n| `build_cmd_doc` | 1 | Build commands documented in README/AGENTS.md | Agent doesn't know how to build |\n| `deps_pinned` | 1 | Lockfile exists (package-lock.json, uv.lock, go.sum) | Non-reproducible builds |\n| `vcs_cli_tools` | 1 | gh/glab CLI authenticated | Can't interact with PRs/issues |\n| `fast_ci_feedback` | 2 | CI completes in <10 minutes | Agent waits too long for feedback |\n| `single_command_setup` | 2 | One command to set up dev environment | Agent can't bootstrap quickly |\n| `release_automation` | 2 | Automated release workflow exists | Manual releases slow deployment |\n| `deployment_frequency` | 2 | Regular releases (weekly+) | Infrequent deploys signal process issues |\n| `release_notes_automation` | 3 | Auto-generated changelogs/release notes | Manual release notes are error-prone |\n| `agentic_development` | 3 | AI agent commits visible in history | No prior agent integration |\n| `automated_pr_review` | 3 | Danger.js, automated review bots | Reviews require human intervention |\n| `feature_flag_infrastructure` | 3 | LaunchDarkly, Statsig, Unleash, custom system | Hard to ship incrementally |\n| `build_performance_tracking` | 4 | Build caching, timing metrics | Build times creep up unnoticed |\n| `heavy_dependency_detection` | 4 | Bundle size analysis (webpack-bundle-analyzer) | Bundle bloat goes unnoticed |\n| `unused_dependencies_detection` | 4 | depcheck, deptry in CI | Bloated dependency tree |\n| `dead_feature_flag_detection` | 4 | Stale flag detection tooling | Abandoned flags clutter code |\n| `monorepo_tooling` | 4 | Nx, Turborepo, Bazel for monorepos | Cross-package changes are error-prone |\n| `version_drift_detection` | 4 | Version consistency checks | Packages diverge silently |\n| `progressive_rollout` | 5 | Canary deploys, gradual rollouts | All-or-nothing deployments are risky |\n| `rollback_automation` | 5 | One-click rollback capability | Slow recovery from bad deploys |\n\n---\n\n## 3. Testing\n\nTests verify that changes work. Without them, agents can't validate their own work.\n\n| Criterion | Level | Detection | Impact |\n|-----------|-------|-----------|--------|\n| `unit_tests_exist` | 1 | Test files present (*_test.*, *.spec.*) | No way to verify basic correctness |\n| `unit_tests_runnable` | 1 | Test command documented and works | Agent can't run tests |\n| `test_naming_conventions` | 2 | Consistent test file naming | Tests hard to find |\n| `test_isolation` | 2 | Tests can run in parallel | Slow test runs |\n| `integration_tests_exist` | 3 | E2E/integration test directory | Only unit-level coverage |\n| `test_coverage_thresholds` | 3 | Coverage enforcement in CI | Coverage drifts down |\n| `flaky_test_detection` | 4 | Test retry, quarantine, or tracking | Flaky tests erode trust |\n| `test_performance_tracking` | 4 | Test timing metrics | Slow tests accumulate |\n\n---\n\n## 4. Documentation\n\nDocumentation tells the agent what it needs to know. Missing docs mean wasted exploration.\n\n| Criterion | Level | Detection | Impact |\n|-----------|-------|-----------|--------|\n| `readme` | 1 | README.md exists with setup instructions | Agent doesn't know project basics |\n| `agents_md` | 2 | AGENTS.md or CLAUDE.md exists | Agent lacks operational guidance |\n| `documentation_freshness` | 2 | Key docs updated in last 180 days | Stale docs mislead agent |\n| `api_schema_docs` | 3 | OpenAPI spec, GraphQL schema, or API docs | Agent must reverse-engineer APIs |\n| `automated_doc_generation` | 3 | Doc generation in CI | Docs drift from code |\n| `service_flow_documented` | 3 | Architecture diagrams (mermaid, PlantUML) | Agent lacks system context |\n| `skills` | 3 | Skills directory (.claude/skills/, .factory/skills/) | No specialized agent instructions |\n| `agents_md_validation` | 4 | CI validates AGENTS.md commands work | AGENTS.md becomes stale |\n\n---\n\n## 5. Dev Environment\n\nReproducible environments prevent \"works on my machine\" issues.\n\n| Criterion | Level | Detection | Impact |\n|-----------|-------|-----------|--------|\n| `env_template` | 2 | .env.example or documented env vars | Agent guesses at configuration |\n| `devcontainer` | 3 | .devcontainer/devcontainer.json exists | Environment setup is manual |\n| `devcontainer_runnable` | 3 | Devcontainer builds and works | Devcontainer is broken |\n| `database_schema` | 3 | Schema files or migration directory | Database structure undocumented |\n| `local_services_setup` | 3 | docker-compose.yml for dependencies | External services need manual setup |\n\n---\n\n## 6. Debugging & Observability\n\nWhen things go wrong, observability helps diagnose issues quickly.\n\n| Criterion | Level | Detection | Impact |\n|-----------|-------|-----------|--------|\n| `structured_logging` | 2 | Logging library with structured output | Logs hard to parse |\n| `code_quality_metrics` | 2 | Coverage reporting in CI | No visibility into code quality |\n| `error_tracking_contextualized` | 3 | Sentry, Bugsnag with context | Errors lack context for debugging |\n| `distributed_tracing` | 3 | OpenTelemetry, trace IDs | Can't trace requests across services |\n| `metrics_collection` | 3 | Prometheus, Datadog, or custom metrics | No runtime visibility |\n| `health_checks` | 3 | Health/readiness endpoints | Can't verify service status |\n| `profiling_instrumentation` | 4 | CPU/memory profiling tools | Performance issues hard to diagnose |\n| `alerting_configured` | 4 | PagerDuty, OpsGenie, alert rules | Issues discovered late |\n| `deployment_observability` | 4 | Deploy tracking, dashboards | Can't correlate issues to deploys |\n| `runbooks_documented` | 4 | Runbooks directory or linked docs | No guidance for incident response |\n| `circuit_breakers` | 5 | Resilience patterns implemented | Cascading failures |\n\n---\n\n## 7. Security\n\nSecurity criteria protect the codebase and data.\n\n| Criterion | Level | Detection | Impact |\n|-----------|-------|-----------|--------|\n| `gitignore_comprehensive` | 1 | .gitignore excludes secrets, build artifacts | Sensitive files committed |\n| `secrets_management` | 2 | GitHub secrets, vault, cloud secrets | Hardcoded secrets |\n| `codeowners` | 2 | CODEOWNERS file exists | No clear ownership |\n| `branch_protection` | 2 | Protected main branch | Unreviewed changes to main |\n| `dependency_update_automation` | 3 | Dependabot, Renovate configured | Dependencies go stale |\n| `log_scrubbing` | 3 | Log sanitization for PII | Sensitive data in logs |\n| `pii_handling` | 3 | PII redaction mechanisms | PII exposure risk |\n| `automated_security_review` | 4 | CodeQL, Snyk, SonarQube in CI | Security issues caught late |\n| `secret_scanning` | 4 | GitHub secret scanning enabled | Leaked credentials |\n| `dast_scanning` | 5 | Dynamic security testing | Runtime vulnerabilities missed |\n| `privacy_compliance` | 5 | GDPR/privacy tooling | Compliance gaps |\n\n---\n\n## 8. Task Discovery\n\nStructured task management helps agents find and understand work.\n\n| Criterion | Level | Detection | Impact |\n|-----------|-------|-----------|--------|\n| `issue_templates` | 2 | .github/ISSUE_TEMPLATE/ exists | Inconsistent issue quality |\n| `issue_labeling_system` | 2 | Consistent labels on issues | Issues hard to categorize |\n| `pr_templates` | 2 | pull_request_template.md exists | PRs lack context |\n| `backlog_health` | 3 | Issues have descriptive titles, labels | Unclear what to work on |\n\n---\n\n## 9. Product & Analytics\n\nConnect errors to insights and understand user behavior.\n\n| Criterion | Level | Detection | Impact |\n|-----------|-------|-----------|--------|\n| `error_to_insight_pipeline` | 5 | Sentry-GitHub issue creation automation | Errors don't become actionable issues |\n| `product_analytics_instrumentation` | 5 | Mixpanel, Amplitude, PostHog, Heap | No user behavior data to inform decisions |\n\n---\n\n## Skipped Criteria\n\nSome criteria are skipped based on repository type:\n- **Libraries**: Skip deployment-related criteria (progressive_rollout, health_checks)\n- **CLI tools**: Skip web-specific criteria (dast_scanning)\n- **Database projects**: Skip N+1 detection (they ARE the database)\n- **Single apps**: Skip monorepo tooling criteria\n\nThe analysis script automatically determines which criteria to skip based on detected repository characteristics.",
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/readiness-report/references/criteria.md",
+            "inputs": [],
+            "is_agentskills_format": false
+          },
+          {
+            "name": "skills/readiness-report/references/maturity-levels",
+            "content": "# Maturity Levels\n\nRepositories progress through five levels. Each level represents a qualitative shift in what autonomous agents can accomplish.\n\n## Level Progression Rules\n\n1. **80% Threshold**: To unlock a level, pass \u226580% of criteria at that level\n2. **Cumulative**: Must also pass all previous levels at 80%+\n3. **Binary Criteria**: Each criterion is pass/fail (no partial credit)\n4. **Skipped Criteria**: Not applicable criteria are excluded from the calculation\n\n---\n\n## Level 1: Initial\n\n**Status**: Basic version control  \n**Agent Capability**: Manual assistance only\n\n### Requirements\nThe bare minimum for any collaborative development.\n\n| Criterion | Pillar |\n|-----------|--------|\n| `formatter` | Style & Validation |\n| `lint_config` | Style & Validation |\n| `type_check` | Style & Validation |\n| `build_cmd_doc` | Build System |\n| `deps_pinned` | Build System |\n| `vcs_cli_tools` | Build System |\n| `unit_tests_exist` | Testing |\n| `unit_tests_runnable` | Testing |\n| `readme` | Documentation |\n| `gitignore_comprehensive` | Security |\n\n### What Agents Can Do\n- Read and understand code\n- Make simple edits with manual verification\n- Cannot reliably validate their own changes\n\n### What's Missing\nWithout L1, agents operate blind\u2014no way to verify builds, run tests, or ensure code quality.\n\n---\n\n## Level 2: Managed\n\n**Status**: Basic CI/CD and testing  \n**Agent Capability**: Simple, well-defined tasks\n\n### Requirements\nFoundational automation and documentation.\n\n| Criterion | Pillar |\n|-----------|--------|\n| `strict_typing` | Style & Validation |\n| `pre_commit_hooks` | Style & Validation |\n| `naming_consistency` | Style & Validation |\n| `large_file_detection` | Style & Validation |\n| `fast_ci_feedback` | Build System |\n| `single_command_setup` | Build System |\n| `release_automation` | Build System |\n| `deployment_frequency` | Build System |\n| `test_naming_conventions` | Testing |\n| `test_isolation` | Testing |\n| `agents_md` | Documentation |\n| `documentation_freshness` | Documentation |\n| `env_template` | Dev Environment |\n| `structured_logging` | Observability |\n| `code_quality_metrics` | Observability |\n| `secrets_management` | Security |\n| `codeowners` | Security |\n| `branch_protection` | Security |\n| `issue_templates` | Task Discovery |\n| `issue_labeling_system` | Task Discovery |\n| `pr_templates` | Task Discovery |\n\n### What Agents Can Do\n- Fix simple, well-scoped bugs\n- Make straightforward changes with fast feedback\n- Run tests and verify basic correctness\n\n### What's Missing\nWithout L2, feedback loops are too slow. Agents wait minutes for CI instead of seconds for local checks.\n\n---\n\n## Level 3: Standardized\n\n**Status**: Production-ready for agents  \n**Agent Capability**: Routine maintenance\n\n### Requirements\nClear processes defined and enforced. This is the target for most teams.\n\n| Criterion | Pillar |\n|-----------|--------|\n| `code_modularization` | Style & Validation |\n| `cyclomatic_complexity` | Style & Validation |\n| `dead_code_detection` | Style & Validation |\n| `duplicate_code_detection` | Style & Validation |\n| `release_notes_automation` | Build System |\n| `agentic_development` | Build System |\n| `automated_pr_review` | Build System |\n| `feature_flag_infrastructure` | Build System |\n| `integration_tests_exist` | Testing |\n| `test_coverage_thresholds` | Testing |\n| `api_schema_docs` | Documentation |\n| `automated_doc_generation` | Documentation |\n| `service_flow_documented` | Documentation |\n| `skills` | Documentation |\n| `devcontainer` | Dev Environment |\n| `devcontainer_runnable` | Dev Environment |\n| `database_schema` | Dev Environment |\n| `local_services_setup` | Dev Environment |\n| `error_tracking_contextualized` | Observability |\n| `distributed_tracing` | Observability |\n| `metrics_collection` | Observability |\n| `health_checks` | Observability |\n| `dependency_update_automation` | Security |\n| `log_scrubbing` | Security |\n| `pii_handling` | Security |\n| `backlog_health` | Task Discovery |\n\n### What Agents Can Do\n- Bug fixes and routine maintenance\n- Test additions and documentation updates\n- Dependency upgrades with confidence\n- Feature work with clear specifications\n\n### Example Repositories at L3\n- FastAPI\n- GitHub CLI\n- pytest\n\n---\n\n## Level 4: Measured\n\n**Status**: Comprehensive automation  \n**Agent Capability**: Complex features\n\n### Requirements\nAdvanced tooling and metrics for optimization.\n\n| Criterion | Pillar |\n|-----------|--------|\n| `tech_debt_tracking` | Style & Validation |\n| `n_plus_one_detection` | Style & Validation |\n| `build_performance_tracking` | Build System |\n| `unused_dependencies_detection` | Build System |\n| `dead_feature_flag_detection` | Build System |\n| `monorepo_tooling` | Build System |\n| `version_drift_detection` | Build System |\n| `flaky_test_detection` | Testing |\n| `test_performance_tracking` | Testing |\n| `agents_md_validation` | Documentation |\n| `profiling_instrumentation` | Observability |\n| `alerting_configured` | Observability |\n| `deployment_observability` | Observability |\n| `runbooks_documented` | Observability |\n| `automated_security_review` | Security |\n| `secret_scanning` | Security |\n\n### What Agents Can Do\n- Complex multi-file refactors\n- Performance optimization with data\n- Architecture improvements\n- Security hardening\n\n### Example Repositories at L4\n- CockroachDB\n- Temporal\n\n---\n\n## Level 5: Optimized\n\n**Status**: Full autonomous capability  \n**Agent Capability**: End-to-end development\n\n### Requirements\nComprehensive observability, security, and automation.\n\n| Criterion | Pillar |\n|-----------|--------|\n| `progressive_rollout` | Build System |\n| `rollback_automation` | Build System |\n| `circuit_breakers` | Observability |\n| `dast_scanning` | Security |\n| `privacy_compliance` | Security |\n| `error_to_insight_pipeline` | Task Discovery |\n| `product_analytics_instrumentation` | Task Discovery |\n\n### What Agents Can Do\n- Full feature development with minimal oversight\n- Incident response and remediation\n- Autonomous triage and prioritization\n- Continuous improvement of the codebase itself\n\n### What L5 Looks Like\nVery few repositories achieve L5. It requires mature DevOps, comprehensive observability, and sophisticated automation.\n\n---\n\n## Calculating Scores\n\n### Repository Score\n```\nPass Rate = (Passed Criteria) / (Total Applicable Criteria) \u00d7 100%\n```\n\n### Level Determination\n```\nFor each level L (1 to 5):\n  If (pass rate at L \u2265 80%) AND (all lower levels \u2265 80%):\n    Repository is at level L\n```\n\n### Organization Score\n```\nOrg Level = floor(average of all repository levels)\nKey Metric = % of active repos at L3+\n```\n\n---\n\n## Priority Order for Improvement\n\n1. **Fix L1 failures first**: These block basic operation\n2. **Then L2**: Enable fast feedback loops\n3. **Aim for L3**: Production-ready target\n4. **L4+ is optimization**: Nice to have, not essential\n\n### Quick Wins by Level\n\n**L1 \u2192 L2**:\n- Add pre-commit hooks\n- Document setup commands\n- Add AGENTS.md\n\n**L2 \u2192 L3**:\n- Add integration tests\n- Set up devcontainer\n- Configure automated reviews\n\n**L3 \u2192 L4**:\n- Add complexity analysis\n- Set up flaky test detection\n- Enable security scanning",
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/readiness-report/references/maturity-levels.md",
+            "inputs": [],
+            "is_agentskills_format": false
+          },
+          {
+            "name": "skills/theme-factory/themes/sunset-boulevard",
+            "content": "# Sunset Boulevard\n\nA warm and vibrant theme inspired by golden hour sunsets, perfect for energetic and creative presentations.\n\n## Color Palette\n\n- **Burnt Orange**: `#e76f51` - Primary accent color\n- **Coral**: `#f4a261` - Secondary warm accent\n- **Warm Sand**: `#e9c46a` - Highlighting and backgrounds\n- **Deep Purple**: `#264653` - Dark contrast and text\n\n## Typography\n\n- **Headers**: DejaVu Serif Bold\n- **Body Text**: DejaVu Sans\n\n## Best Used For\n\nCreative pitches, marketing presentations, lifestyle brands, event promotions, inspirational content.",
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/theme-factory/themes/sunset-boulevard.md",
+            "inputs": [],
+            "is_agentskills_format": false
+          },
+          {
+            "name": "skills/theme-factory/themes/tech-innovation",
+            "content": "# Tech Innovation\n\nA bold and modern theme with high-contrast colors perfect for cutting-edge technology presentations.\n\n## Color Palette\n\n- **Electric Blue**: `#0066ff` - Vibrant primary accent\n- **Neon Cyan**: `#00ffff` - Bright highlight color\n- **Dark Gray**: `#1e1e1e` - Deep backgrounds\n- **White**: `#ffffff` - Clean text and contrast\n\n## Typography\n\n- **Headers**: DejaVu Sans Bold\n- **Body Text**: DejaVu Sans\n\n## Best Used For\n\nTech startups, software launches, innovation showcases, AI/ML presentations, digital transformation content.",
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/theme-factory/themes/tech-innovation.md",
+            "inputs": [],
+            "is_agentskills_format": false
+          },
+          {
+            "name": "skills/theme-factory/themes/arctic-frost",
+            "content": "# Arctic Frost\n\nA cool and crisp winter-inspired theme that conveys clarity, precision, and professionalism.\n\n## Color Palette\n\n- **Ice Blue**: `#d4e4f7` - Light backgrounds and highlights\n- **Steel Blue**: `#4a6fa5` - Primary accent color\n- **Silver**: `#c0c0c0` - Metallic accent elements\n- **Crisp White**: `#fafafa` - Clean backgrounds and text\n\n## Typography\n\n- **Headers**: DejaVu Sans Bold\n- **Body Text**: DejaVu Sans\n\n## Best Used For\n\nHealthcare presentations, technology solutions, winter sports, clean tech, pharmaceutical content.",
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/theme-factory/themes/arctic-frost.md",
+            "inputs": [],
+            "is_agentskills_format": false
+          },
+          {
+            "name": "skills/theme-factory/themes/modern-minimalist",
+            "content": "# Modern Minimalist\n\nA clean and contemporary theme with a sophisticated grayscale palette for maximum versatility.\n\n## Color Palette\n\n- **Charcoal**: `#36454f` - Primary dark color\n- **Slate Gray**: `#708090` - Medium gray for accents\n- **Light Gray**: `#d3d3d3` - Backgrounds and dividers\n- **White**: `#ffffff` - Text and clean backgrounds\n\n## Typography\n\n- **Headers**: DejaVu Sans Bold\n- **Body Text**: DejaVu Sans\n\n## Best Used For\n\nTech presentations, architecture portfolios, design showcases, modern business proposals, data visualization.",
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/theme-factory/themes/modern-minimalist.md",
+            "inputs": [],
+            "is_agentskills_format": false
+          },
+          {
+            "name": "skills/theme-factory/themes/golden-hour",
+            "content": "# Golden Hour\n\nA rich and warm autumnal palette that creates an inviting and sophisticated atmosphere.\n\n## Color Palette\n\n- **Mustard Yellow**: `#f4a900` - Bold primary accent\n- **Terracotta**: `#c1666b` - Warm secondary color\n- **Warm Beige**: `#d4b896` - Neutral backgrounds\n- **Chocolate Brown**: `#4a403a` - Dark text and anchors\n\n## Typography\n\n- **Headers**: FreeSans Bold\n- **Body Text**: FreeSans\n\n## Best Used For\n\nRestaurant presentations, hospitality brands, fall campaigns, cozy lifestyle content, artisan products.",
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/theme-factory/themes/golden-hour.md",
+            "inputs": [],
+            "is_agentskills_format": false
+          },
+          {
+            "name": "skills/theme-factory/themes/midnight-galaxy",
+            "content": "# Midnight Galaxy\n\nA dramatic and cosmic theme with deep purples and mystical tones for impactful presentations.\n\n## Color Palette\n\n- **Deep Purple**: `#2b1e3e` - Rich dark base\n- **Cosmic Blue**: `#4a4e8f` - Mystical mid-tone\n- **Lavender**: `#a490c2` - Soft accent color\n- **Silver**: `#e6e6fa` - Light highlights and text\n\n## Typography\n\n- **Headers**: FreeSans Bold\n- **Body Text**: FreeSans\n\n## Best Used For\n\nEntertainment industry, gaming presentations, nightlife venues, luxury brands, creative agencies.",
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/theme-factory/themes/midnight-galaxy.md",
+            "inputs": [],
+            "is_agentskills_format": false
+          },
+          {
+            "name": "skills/theme-factory/themes/forest-canopy",
+            "content": "# Forest Canopy\n\nA natural and grounded theme featuring earth tones inspired by dense forest environments.\n\n## Color Palette\n\n- **Forest Green**: `#2d4a2b` - Primary dark green\n- **Sage**: `#7d8471` - Muted green accent\n- **Olive**: `#a4ac86` - Light accent color\n- **Ivory**: `#faf9f6` - Backgrounds and text\n\n## Typography\n\n- **Headers**: FreeSerif Bold\n- **Body Text**: FreeSans\n\n## Best Used For\n\nEnvironmental presentations, sustainability reports, outdoor brands, wellness content, organic products.",
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/theme-factory/themes/forest-canopy.md",
+            "inputs": [],
+            "is_agentskills_format": false
+          },
+          {
+            "name": "skills/theme-factory/themes/ocean-depths",
+            "content": "# Ocean Depths\n\nA professional and calming maritime theme that evokes the serenity of deep ocean waters.\n\n## Color Palette\n\n- **Deep Navy**: `#1a2332` - Primary background color\n- **Teal**: `#2d8b8b` - Accent color for highlights and emphasis\n- **Seafoam**: `#a8dadc` - Secondary accent for lighter elements\n- **Cream**: `#f1faee` - Text and light backgrounds\n\n## Typography\n\n- **Headers**: DejaVu Sans Bold\n- **Body Text**: DejaVu Sans\n\n## Best Used For\n\nCorporate presentations, financial reports, professional consulting decks, trust-building content.",
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/theme-factory/themes/ocean-depths.md",
+            "inputs": [],
+            "is_agentskills_format": false
+          },
+          {
+            "name": "skills/theme-factory/themes/desert-rose",
+            "content": "# Desert Rose\n\nA soft and sophisticated theme with dusty, muted tones perfect for elegant presentations.\n\n## Color Palette\n\n- **Dusty Rose**: `#d4a5a5` - Soft primary color\n- **Clay**: `#b87d6d` - Earthy accent\n- **Sand**: `#e8d5c4` - Warm neutral backgrounds\n- **Deep Burgundy**: `#5d2e46` - Rich dark contrast\n\n## Typography\n\n- **Headers**: FreeSans Bold\n- **Body Text**: FreeSans\n\n## Best Used For\n\nFashion presentations, beauty brands, wedding planning, interior design, boutique businesses.",
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/theme-factory/themes/desert-rose.md",
+            "inputs": [],
+            "is_agentskills_format": false
+          },
+          {
+            "name": "skills/theme-factory/themes/botanical-garden",
+            "content": "# Botanical Garden\n\nA fresh and organic theme featuring vibrant garden-inspired colors for lively presentations.\n\n## Color Palette\n\n- **Fern Green**: `#4a7c59` - Rich natural green\n- **Marigold**: `#f9a620` - Bright floral accent\n- **Terracotta**: `#b7472a` - Earthy warm tone\n- **Cream**: `#f5f3ed` - Soft neutral backgrounds\n\n## Typography\n\n- **Headers**: DejaVu Serif Bold\n- **Body Text**: DejaVu Sans\n\n## Best Used For\n\nGarden centers, food presentations, farm-to-table content, botanical brands, natural products.",
+            "source": "/Users/atineose/.openhands/cache/skills/public-skills/skills/theme-factory/themes/botanical-garden.md",
+            "inputs": [],
+            "is_agentskills_format": false
+          }
+        ],
+        "system_message_suffix": "Your current working directory is: /Users/atineose/dev/ML_projects/Agents/OpenHands/software-agent-sdk\nUser operating system: macOS 26.2",
+        "load_user_skills": true,
+        "load_public_skills": true
+      },
+      "system_prompt_filename": "system_prompt.j2",
+      "security_policy_filename": "security_policy.j2",
+      "system_prompt_kwargs": {
+        "cli_mode": true,
+        "llm_security_analyzer": true
+      },
+      "condenser": {
+        "llm": {
+          "model": "openai/Claude-Haiku-4.5",
+          "api_key": "**********",
+          "base_url": "https://api.poe.com/v1",
+          "openrouter_site_url": "https://docs.all-hands.dev/",
+          "openrouter_app_name": "OpenHands",
+          "num_retries": 5,
+          "retry_multiplier": 8.0,
+          "retry_min_wait": 8,
+          "retry_max_wait": 64,
+          "max_message_chars": 30000,
+          "temperature": 0.0,
+          "top_p": 1.0,
+          "max_input_tokens": 128000,
+          "max_output_tokens": 128000,
+          "stream": false,
+          "drop_params": true,
+          "modify_params": true,
+          "disable_stop_word": false,
+          "caching_prompt": true,
+          "log_completions": false,
+          "log_completions_folder": "logs/completions",
+          "native_tool_calling": true,
+          "reasoning_effort": "high",
+          "enable_encrypted_reasoning": true,
+          "prompt_cache_retention": "24h",
+          "extended_thinking_budget": 200000,
+          "usage_id": "condenser",
+          "litellm_extra_body": {}
+        },
+        "max_size": 240,
+        "keep_first": 2,
+        "hard_context_reset_max_retries": 5,
+        "hard_context_reset_context_scaling": 0.8,
+        "kind": "LLMSummarizingCondenser"
+      },
+      "kind": "Agent"
+    },
+    "workspace": {
+      "working_dir": "/Users/atineose/dev/ML_projects/Agents/OpenHands/software-agent-sdk",
+      "kind": "LocalWorkspace"
+    },
+    "persistence_dir": "/Users/atineose/.openhands/conversations/738af793554247daab6f62001054d891",
+    "max_iterations": 500,
+    "stuck_detection": true,
+    "execution_status": "error",
+    "confirmation_policy": {
+      "threshold": "HIGH",
+      "confirm_unknown": true,
+      "kind": "ConfirmRisky"
+    },
+    "security_analyzer": {
+      "kind": "LLMSecurityAnalyzer"
+    },
+    "activated_knowledge_skills": [],
+    "blocked_actions": {},
+    "blocked_messages": {},
+    "stats": {
+      "usage_to_metrics": {
+        "agent": {
+          "model_name": "openai/Claude-Haiku-4.5",
+          "accumulated_cost": 0.0,
+          "accumulated_token_usage": {
+            "model": "openai/Claude-Haiku-4.5",
+            "prompt_tokens": 1884833,
+            "completion_tokens": 9864,
+            "cache_read_tokens": 1829076,
+            "cache_write_tokens": 0,
+            "reasoning_tokens": 0,
+            "context_window": 128000,
+            "per_turn_token": 55783,
+            "response_id": ""
+          },
+          "costs": [],
+          "response_latencies": [
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 3.8317220211029053,
+              "response_id": "chatcmpl-4db77ad0b158ac08ef2bd455"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 2.8037350177764893,
+              "response_id": "chatcmpl-37aa173894ab90debc5062ba"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 4.147643804550171,
+              "response_id": "chatcmpl-67178c54af6f7a7eb71150c4"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 3.5694692134857178,
+              "response_id": "chatcmpl-b3d7cd2e7794f32cc96936b9"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 3.350253105163574,
+              "response_id": "chatcmpl-db2b5e714bb6db79b7cabb05"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 2.8783578872680664,
+              "response_id": "chatcmpl-639a7937bfa26df1b2572262"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 3.169288158416748,
+              "response_id": "chatcmpl-2fbc040ccc953b02e30cfe6a"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 3.3523499965667725,
+              "response_id": "chatcmpl-5399bdf34db7a85b2d0330f4"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 3.373701810836792,
+              "response_id": "chatcmpl-45390719691e92787ef38674"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 5.317270994186401,
+              "response_id": "chatcmpl-4cbd84734eb85da393ebb5c7"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 3.4266891479492188,
+              "response_id": "chatcmpl-4bc167ae220427e5ed0b4c24"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 6.668129205703735,
+              "response_id": "chatcmpl-f6b9c52f5205c0b0aaa6bd64"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 4.0869011878967285,
+              "response_id": "chatcmpl-06b2f890279afc4c0ba9f8e5"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 3.0593199729919434,
+              "response_id": "chatcmpl-a1795d134403bbf191cf07a2"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 2.953791379928589,
+              "response_id": "chatcmpl-86032e12a67608dcbce38166"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 4.135688066482544,
+              "response_id": "chatcmpl-ff1257c838815a9ac9aef440"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 4.268075942993164,
+              "response_id": "chatcmpl-9ff4f69a2891dad41b7858b7"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 3.296057939529419,
+              "response_id": "chatcmpl-6a22ddf3b795a6e6e1c9aea2"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 3.3698108196258545,
+              "response_id": "chatcmpl-eee1fb04b89f1a5411e2efac"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 3.494560956954956,
+              "response_id": "chatcmpl-1f90433fb5a115cc3c47105d"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 3.3023712635040283,
+              "response_id": "chatcmpl-08e1163dc7f1bed822aed5ee"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 3.8744471073150635,
+              "response_id": "chatcmpl-6b4949897ea3ebf93489c741"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 3.442031145095825,
+              "response_id": "chatcmpl-46ae8de88d985c1b95c9fd3d"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 6.585381269454956,
+              "response_id": "chatcmpl-5176dbc18eb359b1625e32c7"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 5.813192844390869,
+              "response_id": "chatcmpl-32ce69615796b80ac60959c5"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 3.7902560234069824,
+              "response_id": "chatcmpl-5182d55fa7fa78207f23dc20"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 4.243700981140137,
+              "response_id": "chatcmpl-27cb5aa981b4e26e8e219313"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 4.0232861042022705,
+              "response_id": "chatcmpl-9f4f325beb83aa67b2a69e26"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 4.147785902023315,
+              "response_id": "chatcmpl-d2a0bfed555e888dc730d552"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 4.343420028686523,
+              "response_id": "chatcmpl-34486214d1c94d461858cd49"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 3.109718084335327,
+              "response_id": "chatcmpl-15cd421db4791779b399b906"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 3.2386298179626465,
+              "response_id": "chatcmpl-1c565a5f8f96d2533246d455"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 7.052227735519409,
+              "response_id": "chatcmpl-2e75f61a06779458dffe8e97"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 3.123008966445923,
+              "response_id": "chatcmpl-a98f207fc69c97206c09cf3f"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 6.425372123718262,
+              "response_id": "chatcmpl-9e573209116cbefba29b54b7"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 4.0206849575042725,
+              "response_id": "chatcmpl-9bc74b521ab1753649f0f614"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 4.373971939086914,
+              "response_id": "chatcmpl-9abbab57295fd65df584734a"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 3.6348650455474854,
+              "response_id": "chatcmpl-d179bac12af5f3b02ce8ee15"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 4.069059133529663,
+              "response_id": "chatcmpl-c89c01f5fb70b72b260567a5"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 3.380864143371582,
+              "response_id": "chatcmpl-00eb61c82af3eea0f38a6898"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 4.065096855163574,
+              "response_id": "chatcmpl-7737436685e4d3abd882a602"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 3.539815902709961,
+              "response_id": "chatcmpl-dc1e8c063eb014217bdfd035"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 3.517754077911377,
+              "response_id": "chatcmpl-4147412b8c79193e046c607f"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 3.5508930683135986,
+              "response_id": "chatcmpl-67d347313f325477f859c0b1"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 4.624580144882202,
+              "response_id": "chatcmpl-b1d678540ec3ce98abc54590"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "latency": 4.890784025192261,
+              "response_id": "chatcmpl-4a40fe7d0476a6d5c5819490"
+            }
+          ],
+          "token_usages": [
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 23081,
+              "completion_tokens": 149,
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 23230,
+              "response_id": "chatcmpl-4db77ad0b158ac08ef2bd455"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 25503,
+              "completion_tokens": 140,
+              "cache_read_tokens": 23078,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 25643,
+              "response_id": "chatcmpl-37aa173894ab90debc5062ba"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 29178,
+              "completion_tokens": 175,
+              "cache_read_tokens": 25498,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 29353,
+              "response_id": "chatcmpl-67178c54af6f7a7eb71150c4"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 29748,
+              "completion_tokens": 198,
+              "cache_read_tokens": 29173,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 29946,
+              "response_id": "chatcmpl-b3d7cd2e7794f32cc96936b9"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 32174,
+              "completion_tokens": 213,
+              "cache_read_tokens": 29743,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 32387,
+              "response_id": "chatcmpl-db2b5e714bb6db79b7cabb05"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 32561,
+              "completion_tokens": 166,
+              "cache_read_tokens": 32169,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 32727,
+              "response_id": "chatcmpl-639a7937bfa26df1b2572262"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 33084,
+              "completion_tokens": 165,
+              "cache_read_tokens": 32556,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 33249,
+              "response_id": "chatcmpl-2fbc040ccc953b02e30cfe6a"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 33408,
+              "completion_tokens": 167,
+              "cache_read_tokens": 33079,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 33575,
+              "response_id": "chatcmpl-5399bdf34db7a85b2d0330f4"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 33738,
+              "completion_tokens": 165,
+              "cache_read_tokens": 33403,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 33903,
+              "response_id": "chatcmpl-45390719691e92787ef38674"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 34065,
+              "completion_tokens": 516,
+              "cache_read_tokens": 33733,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 34581,
+              "response_id": "chatcmpl-4cbd84734eb85da393ebb5c7"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 35187,
+              "completion_tokens": 91,
+              "cache_read_tokens": 34060,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 35278,
+              "response_id": "chatcmpl-4bc167ae220427e5ed0b4c24"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 35364,
+              "completion_tokens": 497,
+              "cache_read_tokens": 35182,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 35861,
+              "response_id": "chatcmpl-f6b9c52f5205c0b0aaa6bd64"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 35960,
+              "completion_tokens": 182,
+              "cache_read_tokens": 35359,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 36142,
+              "response_id": "chatcmpl-06b2f890279afc4c0ba9f8e5"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 36839,
+              "completion_tokens": 91,
+              "cache_read_tokens": 35955,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 36930,
+              "response_id": "chatcmpl-a1795d134403bbf191cf07a2"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 37016,
+              "completion_tokens": 87,
+              "cache_read_tokens": 36834,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 37103,
+              "response_id": "chatcmpl-86032e12a67608dcbce38166"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 37236,
+              "completion_tokens": 133,
+              "cache_read_tokens": 37011,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 37369,
+              "response_id": "chatcmpl-ff1257c838815a9ac9aef440"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 37497,
+              "completion_tokens": 181,
+              "cache_read_tokens": 37231,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 37678,
+              "response_id": "chatcmpl-9ff4f69a2891dad41b7858b7"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 37851,
+              "completion_tokens": 176,
+              "cache_read_tokens": 37492,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 38027,
+              "response_id": "chatcmpl-6a22ddf3b795a6e6e1c9aea2"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 38204,
+              "completion_tokens": 176,
+              "cache_read_tokens": 37846,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 38380,
+              "response_id": "chatcmpl-eee1fb04b89f1a5411e2efac"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 38747,
+              "completion_tokens": 192,
+              "cache_read_tokens": 38199,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 38939,
+              "response_id": "chatcmpl-1f90433fb5a115cc3c47105d"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 39111,
+              "completion_tokens": 174,
+              "cache_read_tokens": 38742,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 39285,
+              "response_id": "chatcmpl-08e1163dc7f1bed822aed5ee"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 39481,
+              "completion_tokens": 231,
+              "cache_read_tokens": 39106,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 39712,
+              "response_id": "chatcmpl-6b4949897ea3ebf93489c741"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 39935,
+              "completion_tokens": 209,
+              "cache_read_tokens": 39476,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 40144,
+              "response_id": "chatcmpl-46ae8de88d985c1b95c9fd3d"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 40269,
+              "completion_tokens": 469,
+              "cache_read_tokens": 39930,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 40738,
+              "response_id": "chatcmpl-5176dbc18eb359b1625e32c7"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 40783,
+              "completion_tokens": 258,
+              "cache_read_tokens": 40264,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 41041,
+              "response_id": "chatcmpl-32ce69615796b80ac60959c5"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 41379,
+              "completion_tokens": 221,
+              "cache_read_tokens": 40781,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 41600,
+              "response_id": "chatcmpl-5182d55fa7fa78207f23dc20"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 42358,
+              "completion_tokens": 186,
+              "cache_read_tokens": 41374,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 42544,
+              "response_id": "chatcmpl-27cb5aa981b4e26e8e219313"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 44189,
+              "completion_tokens": 184,
+              "cache_read_tokens": 42353,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 44373,
+              "response_id": "chatcmpl-9f4f325beb83aa67b2a69e26"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 44543,
+              "completion_tokens": 190,
+              "cache_read_tokens": 44184,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 44733,
+              "response_id": "chatcmpl-d2a0bfed555e888dc730d552"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 44954,
+              "completion_tokens": 131,
+              "cache_read_tokens": 44538,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 45085,
+              "response_id": "chatcmpl-34486214d1c94d461858cd49"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 45406,
+              "completion_tokens": 148,
+              "cache_read_tokens": 44949,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 45554,
+              "response_id": "chatcmpl-15cd421db4791779b399b906"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 45693,
+              "completion_tokens": 145,
+              "cache_read_tokens": 45401,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 45838,
+              "response_id": "chatcmpl-1c565a5f8f96d2533246d455"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 46298,
+              "completion_tokens": 746,
+              "cache_read_tokens": 45688,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 47044,
+              "response_id": "chatcmpl-2e75f61a06779458dffe8e97"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 47489,
+              "completion_tokens": 91,
+              "cache_read_tokens": 46293,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 47580,
+              "response_id": "chatcmpl-a98f207fc69c97206c09cf3f"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 47666,
+              "completion_tokens": 690,
+              "cache_read_tokens": 47484,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 48356,
+              "response_id": "chatcmpl-9e573209116cbefba29b54b7"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 48819,
+              "completion_tokens": 91,
+              "cache_read_tokens": 47661,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 48910,
+              "response_id": "chatcmpl-9bc74b521ab1753649f0f614"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 48996,
+              "completion_tokens": 140,
+              "cache_read_tokens": 48814,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 49136,
+              "response_id": "chatcmpl-9abbab57295fd65df584734a"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 49270,
+              "completion_tokens": 132,
+              "cache_read_tokens": 48991,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 49402,
+              "response_id": "chatcmpl-d179bac12af5f3b02ce8ee15"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 49568,
+              "completion_tokens": 202,
+              "cache_read_tokens": 49265,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 49770,
+              "response_id": "chatcmpl-c89c01f5fb70b72b260567a5"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 49950,
+              "completion_tokens": 194,
+              "cache_read_tokens": 49563,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 50144,
+              "response_id": "chatcmpl-00eb61c82af3eea0f38a6898"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 50317,
+              "completion_tokens": 212,
+              "cache_read_tokens": 49945,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 50529,
+              "response_id": "chatcmpl-7737436685e4d3abd882a602"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 50662,
+              "completion_tokens": 162,
+              "cache_read_tokens": 50312,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 50824,
+              "response_id": "chatcmpl-dc1e8c063eb014217bdfd035"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 51110,
+              "completion_tokens": 174,
+              "cache_read_tokens": 50657,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 51284,
+              "response_id": "chatcmpl-4147412b8c79193e046c607f"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 51812,
+              "completion_tokens": 172,
+              "cache_read_tokens": 51105,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 51984,
+              "response_id": "chatcmpl-67d347313f325477f859c0b1"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 52797,
+              "completion_tokens": 206,
+              "cache_read_tokens": 51807,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 53003,
+              "response_id": "chatcmpl-b1d678540ec3ce98abc54590"
+            },
+            {
+              "model": "openai/Claude-Haiku-4.5",
+              "prompt_tokens": 55537,
+              "completion_tokens": 246,
+              "cache_read_tokens": 52792,
+              "cache_write_tokens": 0,
+              "reasoning_tokens": 0,
+              "context_window": 128000,
+              "per_turn_token": 55783,
+              "response_id": "chatcmpl-4a40fe7d0476a6d5c5819490"
+            }
+          ]
+        },
+        "condenser": {
+          "model_name": "openai/Claude-Haiku-4.5",
+          "accumulated_cost": 0.0,
+          "accumulated_token_usage": {
+            "model": "openai/Claude-Haiku-4.5",
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "reasoning_tokens": 0,
+            "context_window": 0,
+            "per_turn_token": 0,
+            "response_id": ""
+          },
+          "costs": [],
+          "response_latencies": [],
+          "token_usages": []
+        }
+      }
+    },
+    "secret_registry": {
+      "secret_sources": {}
+    }
+  },
+  "model": "openai/Claude-Haiku-4.5"
+}

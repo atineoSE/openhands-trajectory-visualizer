@@ -1181,8 +1181,8 @@
                     if (event.thought) {
                         let thoughtText = '';
                         if (Array.isArray(event.thought)) {
-                            thoughtText = event.thought.map(t => t.text || t).join('\n');
-                        } else if (typeof event.thought === 'object' && event.thought.text) {
+                            thoughtText = event.thought.map(t => typeof t === 'string' ? t : (t && typeof t.text === 'string' ? t.text : '')).join('\n');
+                        } else if (typeof event.thought === 'object' && event.thought !== null && typeof event.thought.text === 'string') {
                             thoughtText = event.thought.text;
                         } else if (typeof event.thought === 'string') {
                             thoughtText = event.thought;
@@ -1204,13 +1204,15 @@
                         const obs = event.observation;
                         if (obs.content) {
                             const contentText = Array.isArray(obs.content)
-                                ? obs.content.map(c => c.text || c).join('\n')
-                                : (obs.content.text || obs.content);
-                            details.push({
-                                title: 'Observation',
-                                content: contentText,
-                                expandable: true
-                            });
+                                ? obs.content.map(c => typeof c === 'string' ? c : (c && typeof c.text === 'string' ? c.text : '')).join('\n')
+                                : (typeof obs.content === 'string' ? obs.content : (obs.content && typeof obs.content.text === 'string' ? obs.content.text : ''));
+                            if (contentText.trim()) {
+                                details.push({
+                                    title: 'Observation',
+                                    content: contentText,
+                                    expandable: true
+                                });
+                            }
                         }
                         // Note: Status is shown in header, so not showing it here
                         // Note: Tool name is shown in header, so not showing it here
@@ -1344,10 +1346,17 @@
                     break;
                 case 'ActionEvent':
                     if (event.thought) {
-                        const thoughtText = Array.isArray(event.thought)
-                            ? event.thought.map(t => t.text || t).join('\n')
-                            : (event.thought.text || event.thought);
-                        details.push({ title: 'Thought', content: thoughtText });
+                        let thoughtText = '';
+                        if (Array.isArray(event.thought)) {
+                            thoughtText = event.thought.map(t => typeof t === 'string' ? t : (t && typeof t.text === 'string' ? t.text : '')).join('\n');
+                        } else if (typeof event.thought === 'object' && event.thought !== null && typeof event.thought.text === 'string') {
+                            thoughtText = event.thought.text;
+                        } else if (typeof event.thought === 'string') {
+                            thoughtText = event.thought;
+                        }
+                        if (thoughtText.trim()) {
+                            details.push({ title: 'Thought', content: thoughtText });
+                        }
                     }
                     if (event.action) {
                         details.push({ title: 'Action', content: JSON.stringify(event.action, null, 2) });
@@ -1364,9 +1373,11 @@
                         const obs = event.observation;
                         if (obs.content) {
                             const contentText = Array.isArray(obs.content)
-                                ? obs.content.map(c => c.text || c).join('\n')
-                                : (obs.content.text || obs.content);
-                            details.push({ title: 'Observation', content: contentText });
+                                ? obs.content.map(c => typeof c === 'string' ? c : (c && typeof c.text === 'string' ? c.text : '')).join('\n')
+                                : (typeof obs.content === 'string' ? obs.content : (obs.content && typeof obs.content.text === 'string' ? obs.content.text : ''));
+                            if (contentText.trim()) {
+                                details.push({ title: 'Observation', content: contentText });
+                            }
                         }
                     }
                     if (event.tool_name) {
@@ -1614,6 +1625,35 @@
                     console.warn('Conversation ID from URL not found:', hashId);
                 }
             }
+
+            // Listen for hash changes (browser back/forward buttons)
+            window.addEventListener('hashchange', async () => {
+                const newHashId = window.location.hash.slice(1);
+                if (newHashId) {
+                    const trajectory = trajectories.find(t => t.id === newHashId);
+                    if (trajectory && currentTrajectory?.id !== newHashId) {
+                        console.log('Hash changed, selecting conversation:', newHashId);
+                        await selectTrajectory(newHashId);
+                    }
+                } else {
+                    // Hash cleared - deselect current conversation
+                    console.log('Hash cleared, deselecting conversation');
+                    currentTrajectory = null;
+                    currentEvents = [];
+                    expandedEvents.clear();
+                    renderTrajectoryList();
+                    mainTitle.textContent = 'Select a trajectory';
+                    headerActions.style.display = 'none';
+                    mainBody.innerHTML = `
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <p>Select a trajectory from the sidebar to view details</p>
+                        </div>
+                    `;
+                }
+            });
         }
 
         // Start the app

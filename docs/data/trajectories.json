@@ -1,5 +1,35 @@
 [
   {
+    "id": "738af793554247daab6f62001054d444",
+    "title": "738af793554247daab6f62001054d444",
+    "model": "openai/Claude-Haiku-4.5",
+    "created": "Tue Feb 10 18:55:41 2026",
+    "eventCount": 99,
+    "promptTokens": 1884833,
+    "completionTokens": 9864,
+    "reasoningTokens": 0,
+    "cacheReadTokens": 1829076,
+    "cachePct": 97,
+    "totalTokens": 1894697,
+    "avgAgentTurnTime": 4.3,
+    "totalConversationTime": 108704.6
+  },
+  {
+    "id": "738af793554247daab6f62001054d891",
+    "title": "738af793554247daab6f62001054d891",
+    "model": "openai/Claude-Haiku-4.5",
+    "created": "Tue Feb 10 18:12:44 2026",
+    "eventCount": 95,
+    "promptTokens": 1884833,
+    "completionTokens": 9864,
+    "reasoningTokens": 0,
+    "cacheReadTokens": 1829076,
+    "cachePct": 97,
+    "totalTokens": 1894697,
+    "avgAgentTurnTime": 4.1,
+    "totalConversationTime": 554.5
+  },
+  {
     "id": "911e7921cf00464cbdbe1fc04a699c74",
     "title": "911e7921cf00464cbdbe1fc04a699c74",
     "model": "openrouter/moonshotai/kimi-k2-0905",

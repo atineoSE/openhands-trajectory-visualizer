@@ -1546,8 +1546,8 @@
                         <td class="number-cell">${s.conversations}</td>
                         <td class="number-cell">${s.avgTurnDuration.toFixed(1)}s</td>
                         <td class="number-cell">${s.maxTurnDuration.toFixed(1)}s</td>
-                        <td class="number-cell">⬆️ ${formatTokens(s.totalPromptTokens)}</td>
-                        <td class="number-cell">⬇️ ${formatTokens(s.totalCompletionTokens)}</td>
+                        <td class="number-cell">${formatTokens(s.totalPromptTokens)}</td>
+                        <td class="number-cell">${formatTokens(s.totalCompletionTokens)}</td>
                     </tr>
                 `).join('');
             }

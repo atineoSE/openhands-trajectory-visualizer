@@ -1,9 +1,9 @@
 {
-  "id": "738af793554247daab6f62001054d444",
-  "created": "Tue Feb 10 18:55:41 2026",
-  "eventCount": 99,
+  "id": "738af793554247daab6f62001054d555",
+  "created": "Tue Feb 10 17:47:58 2026",
+  "eventCount": 96,
   "baseState": {
-    "id": "738af793-5542-47da-ab6f-62001054d444",
+    "id": "738af793-5542-47da-ab6f-62001054d555",
     "agent": {
       "llm": {
         "model": "openai/Claude-Haiku-4.5",
@@ -18,7 +18,7 @@
         "max_message_chars": 30000,
         "temperature": 0.0,
         "top_p": 1.0,
-        "max_input_tokens": 128000,
+        "max_input_tokens": 64000,
         "max_output_tokens": 64000,
         "stream": false,
         "drop_params": true,
@@ -598,8 +598,8 @@
           "max_message_chars": 30000,
           "temperature": 0.0,
           "top_p": 1.0,
-          "max_input_tokens": 128000,
-          "max_output_tokens": 16000,
+          "max_input_tokens": 64000,
+          "max_output_tokens": 64000,
           "stream": false,
           "drop_params": true,
           "modify_params": true,
@@ -615,7 +615,7 @@
           "usage_id": "condenser",
           "litellm_extra_body": {}
         },
-        "max_size": 80,
+        "max_size": 240,
         "keep_first": 2,
         "hard_context_reset_max_retries": 5,
         "hard_context_reset_context_scaling": 0.8,
@@ -627,7 +627,7 @@
       "working_dir": "/Users/atineose/.openhands",
       "kind": "LocalWorkspace"
     },
-    "persistence_dir": "/Users/atineose/.openhands/conversations/738af793554247daab6f62001054d444",
+    "persistence_dir": "/Users/atineose/.openhands/conversations/738af793554247daab6f62001054d891",
     "max_iterations": 500,
     "stuck_detection": true,
     "execution_status": "finished",

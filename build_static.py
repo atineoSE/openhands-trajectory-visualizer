@@ -1,0 +1,431 @@
+#!/usr/bin/env python3
+"""
+Build script for static Trajectory Visualizer.
+Processes conversation data and generates static JSON files.
+"""
+
+import json
+import time
+import shutil
+import argparse
+from pathlib import Path
+from datetime import datetime
+
+
+def compute_total_conversation_time(events: list) -> float:
+    """Calculate total conversation time (sum of all intervals except from user messages).
+
+    Args:
+        events: List of events sorted by timestamp
+
+    Returns:
+        Total time in seconds
+    """
+    if len(events) < 2:
+        return 0
+
+    total_time = 0
+
+    for i in range(1, len(events)):
+        prev_event = events[i - 1]
+        curr_event = events[i]
+
+        # Only count time if the previous event was NOT from user
+        if prev_event.get("source") != "user":
+            prev_timestamp = prev_event.get("timestamp")
+            curr_timestamp = curr_event.get("timestamp")
+
+            if prev_timestamp and curr_timestamp:
+                try:
+                    prev_dt = datetime.fromisoformat(
+                        prev_timestamp.replace("Z", "+00:00")
+                    )
+                    curr_dt = datetime.fromisoformat(
+                        curr_timestamp.replace("Z", "+00:00")
+                    )
+                    duration = (curr_dt - prev_dt).total_seconds()
+                    if duration > 0:
+                        total_time += duration
+                except (ValueError, TypeError):
+                    pass
+
+    return round(total_time, 1)
+
+
+def compute_trajectory_metadata(trajectory_path: Path) -> dict:
+    """Compute metadata for a single trajectory."""
+    trajectory_id = trajectory_path.name
+    base_state_path = trajectory_path / "base_state.json"
+    events_dir = trajectory_path / "events"
+
+    # Default values
+    title = trajectory_id
+    model = None
+    prompt_tokens = 0
+    completion_tokens = 0
+    reasoning_tokens = 0
+    cache_read_tokens = 0
+    event_count = 0
+    avg_agent_turn_time = 0
+    total_conversation_time = 0
+
+    # Read base_state.json
+    if base_state_path.exists():
+        try:
+            with open(base_state_path, "r") as f:
+                base_state = json.load(f)
+                # Get title from agent.id
+                if "agent" in base_state:
+                    agent = base_state.get("agent", {})
+                    if isinstance(agent, dict):
+                        title = agent.get("id", trajectory_id)
+                        # Get model from agent.llm.model
+                        llm = agent.get("llm", {})
+                        if isinstance(llm, dict):
+                            model = llm.get("model")
+                # Get token usage from stats
+                stats = base_state.get("stats", {})
+                usage = stats.get("usage_to_metrics", {})
+                agent_usage = usage.get("agent", {})
+                token_usage = agent_usage.get("accumulated_token_usage", {})
+                prompt_tokens = token_usage.get("prompt_tokens", 0)
+                completion_tokens = token_usage.get("completion_tokens", 0)
+                reasoning_tokens = token_usage.get("reasoning_tokens", 0)
+                cache_read_tokens = token_usage.get("cache_read_tokens", 0)
+        except (json.JSONDecodeError, IOError):
+            pass
+
+    # Count events and calculate avg turn time and total conversation time
+    events = []
+    if events_dir.exists():
+        event_files = sorted(events_dir.glob("event-*.json"))
+        event_count = len(event_files)
+
+        # Load all events
+        for event_file in event_files:
+            try:
+                with open(event_file, "r") as f:
+                    event = json.load(f)
+                    events.append(event)
+            except (json.JSONDecodeError, IOError):
+                continue
+
+        # Sort events by timestamp
+        events.sort(key=lambda e: e.get("timestamp", ""))
+
+        # Calculate total conversation time (excluding user message intervals)
+        total_conversation_time = compute_total_conversation_time(events)
+
+        # Calculate average agent turn time
+        agent_turn_times = []
+        last_trigger_timestamp = None
+
+        for event in events:
+            event_source = event.get("source")
+            event_timestamp = event.get("timestamp")
+
+            if not event_timestamp:
+                continue
+
+            if event_source == "agent" and last_trigger_timestamp:
+                try:
+                    current_dt = datetime.fromisoformat(
+                        event_timestamp.replace("Z", "+00:00")
+                    )
+                    prev_dt = datetime.fromisoformat(
+                        last_trigger_timestamp.replace("Z", "+00:00")
+                    )
+                    duration = (current_dt - prev_dt).total_seconds()
+                    if duration > 0:
+                        agent_turn_times.append(duration)
+                except (ValueError, TypeError):
+                    pass
+            last_trigger_timestamp = event_timestamp
+
+        if agent_turn_times:
+            avg_agent_turn_time = round(
+                sum(agent_turn_times) / len(agent_turn_times), 1
+            )
+
+    total_tokens = prompt_tokens + completion_tokens
+    cache_pct = 0
+    if prompt_tokens > 0:
+        cache_pct = round((cache_read_tokens / prompt_tokens) * 100)
+
+    return {
+        "id": trajectory_id,
+        "title": title,
+        "model": model,
+        "created": time.ctime(trajectory_path.stat().st_mtime),
+        "eventCount": event_count,
+        "promptTokens": prompt_tokens,
+        "completionTokens": completion_tokens,
+        "reasoningTokens": reasoning_tokens,
+        "cacheReadTokens": cache_read_tokens,
+        "cachePct": cache_pct,
+        "totalTokens": total_tokens,
+        "avgAgentTurnTime": avg_agent_turn_time,
+        "totalConversationTime": total_conversation_time,
+    }
+
+
+def build_trajectory_detail(trajectory_path: Path) -> dict:
+    """Build detailed trajectory data."""
+    trajectory_id = trajectory_path.name
+    base_state_path = trajectory_path / "base_state.json"
+    events_dir = trajectory_path / "events"
+
+    trajectory = {
+        "id": trajectory_id,
+        "created": time.ctime(trajectory_path.stat().st_mtime),
+        "eventCount": 0,
+    }
+
+    if base_state_path.exists():
+        try:
+            with open(base_state_path, "r") as f:
+                base_state = json.load(f)
+                trajectory["baseState"] = base_state
+                agent = base_state.get("agent", {})
+                if isinstance(agent, dict):
+                    llm = agent.get("llm", {})
+                    if isinstance(llm, dict):
+                        trajectory["model"] = llm.get("model")
+        except (json.JSONDecodeError, IOError):
+            pass
+
+    if events_dir.exists():
+        trajectory["eventCount"] = len(list(events_dir.glob("event-*.json")))
+
+    return trajectory
+
+
+def build_events(trajectory_path: Path) -> list:
+    """Build events list for a trajectory."""
+    events_dir = trajectory_path / "events"
+
+    if not events_dir.exists():
+        return []
+
+    events = []
+    event_files = sorted(events_dir.glob("event-*.json"))
+
+    for event_file in event_files:
+        try:
+            with open(event_file, "r") as f:
+                event = json.load(f)
+                events.append(event)
+        except (json.JSONDecodeError, IOError) as e:
+            print(f"Warning: Error reading {event_file}: {e}")
+            continue
+
+    return events
+
+
+def get_conversations_dir(input_path: Path = None) -> tuple[Path, bool]:
+    """Get conversations directory and whether it's custom.
+
+    Args:
+        input_path: Optional path provided by user
+
+    Returns:
+        Tuple of (conversations_dir, is_custom)
+    """
+    default_dir = Path.home() / ".openhands" / "conversations"
+
+    if input_path is None:
+        # Default to ~/.openhands/conversations
+        return default_dir, False
+
+    # User provided a path - resolve it
+    resolved_path = input_path.expanduser().resolve()
+
+    # If the provided path contains a 'conversations' subdir, use that
+    if (resolved_path / "conversations").is_dir():
+        resolved_path = resolved_path / "conversations"
+
+    # Check if this is the default path
+    is_custom = resolved_path != default_dir
+
+    return resolved_path, is_custom
+
+
+def build_static_site(
+    conversations_dir: Path, output_dir: Path, is_custom_dir: bool = False
+):
+    """Build the static site."""
+    print("🔨 Building static site...")
+    print(f"   Source: {conversations_dir}")
+    print(f"   Output: {output_dir}")
+    print(f"   Custom dir: {is_custom_dir}")
+
+    # Clean and create output directory
+    if output_dir.exists():
+        shutil.rmtree(output_dir)
+    output_dir.mkdir(parents=True)
+
+    # Create data directory
+    data_dir = output_dir / "data"
+    data_dir.mkdir()
+
+    # Collect all trajectories
+    trajectories = []
+
+    if not conversations_dir.exists():
+        print(f"⚠️  Warning: Conversations directory not found: {conversations_dir}")
+    else:
+        for entry in sorted(
+            conversations_dir.iterdir(), key=lambda x: x.stat().st_mtime, reverse=True
+        ):
+            # Only process directories that look like trajectory IDs (32 hex chars)
+            # and contain a base_state.json file
+            if (
+                entry.is_dir()
+                and len(entry.name) == 32
+                and all(c in "0123456789abcdef" for c in entry.name.lower())
+            ):
+                print(f"   Processing: {entry.name}")
+
+                # Compute metadata
+                metadata = compute_trajectory_metadata(entry)
+                trajectories.append(metadata)
+
+                # Create trajectory directory in output
+                traj_output_dir = data_dir / entry.name
+                traj_output_dir.mkdir()
+
+                # Build and save trajectory detail
+                trajectory_detail = build_trajectory_detail(entry)
+                with open(traj_output_dir / "trajectory.json", "w") as f:
+                    json.dump(trajectory_detail, f, indent=2, default=str)
+
+                # Build and save events
+                events = build_events(entry)
+                with open(traj_output_dir / "events.json", "w") as f:
+                    json.dump(events, f, indent=2, default=str)
+
+    # Save trajectories list
+    with open(data_dir / "trajectories.json", "w") as f:
+        json.dump(trajectories, f, indent=2, default=str)
+
+    # Copy the HTML viewer
+    html_source = Path(__file__).parent / "trajectory-visualizer.html"
+    html_output = output_dir / "index.html"
+
+    if html_source.exists():
+        # Read and modify the HTML for static mode
+        with open(html_source, "r") as f:
+            html_content = f.read()
+
+        # Inject static configuration
+        static_config = f'''<script>
+        window.TRAJECTORY_CONFIG = {{
+            staticMode: true,
+            isCustomDir: {str(is_custom_dir).lower()},
+            directoryName: "{conversations_dir.name if is_custom_dir else "OpenHands"}"
+        }};
+        </script>'''
+
+        # Insert config before closing </head> tag
+        html_content = html_content.replace("</head>", static_config + "\n</head>")
+
+        # Replace API calls with static file paths
+        status_replacement = """// Static mode: use embedded config
+                return Promise.resolve({
+                    status: 'ok',
+                    staticMode: true,
+                    is_custom_dir: window.TRAJECTORY_CONFIG.isCustomDir,
+                    directory_name: window.TRAJECTORY_CONFIG.directoryName
+                });"""
+        html_content = html_content.replace(
+            "const response = await fetch('/api/status');", status_replacement
+        )
+        html_content = html_content.replace(
+            "const response = await fetch('/api/trajectories');",
+            "const response = await fetch('data/trajectories.json');",
+        )
+        html_content = html_content.replace(
+            "const response = await fetch(`/api/trajectories/${trajectoryId}/events`);",
+            "const response = await fetch(`data/${trajectoryId}/events.json`);",
+        )
+
+        # Disable auto-refresh in static mode
+        html_content = html_content.replace(
+            "// Start auto-refresh\n            startAutoRefresh();",
+            "// Static mode: auto-refresh disabled",
+        )
+
+        # Add file:// protocol detection and error handling
+        file_protocol_check = """
+        // Check if running from file:// protocol
+        if (window.location.protocol === 'file:') {
+            console.error('ERROR: File protocol detected. Cannot load data files.');
+            document.body.innerHTML = `
+                <div style="padding: 40px; font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h1 style="color: #e76f51;">⚠️ Cannot Load Trajectories</h1>
+                    <p>The Trajectory Visualizer cannot run directly from a file:// URL due to browser security restrictions.</p>
+                    <h3>Solution: Use a Local Server</h3>
+                    <p>Run one of these commands in the project directory:</p>
+                    <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto;">
+# Option 1: Use the provided serve script
+./serve
+
+# Option 2: Use Python directly
+cd dist && python3 -m http.server 8050
+
+# Option 3: Use npx serve
+npx serve dist -p 8050</pre>
+                    <p>Then open <code>http://localhost:8050</code> in your browser.</p>
+                </div>
+            `;
+            throw new Error('File protocol not supported. Please use a local server.');
+        }
+        """
+
+        # Insert the check at the beginning of the init function
+        html_content = html_content.replace(
+            "// Initialize\n        async function init() {",
+            "// Initialize\n        async function init() {\n" + file_protocol_check,
+        )
+
+        with open(html_output, "w") as f:
+            f.write(html_content)
+        print(f"   Created: {html_output}")
+    else:
+        print(f"⚠️  Warning: HTML source not found: {html_source}")
+
+    print("\n✅ Build complete!")
+    print(f"   Output directory: {output_dir}")
+    print(f"   Trajectories: {len(trajectories)}")
+    print("\n📁 To view:")
+    print("   1. Run: ./serve")
+    print("   2. Visit: http://localhost:8050")
+    print(f"\n   Or use: python -m http.server 8050 -d {output_dir}")
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Build static Trajectory Visualizer site"
+    )
+    parser.add_argument(
+        "conversations_dir",
+        nargs="?",
+        type=Path,
+        help="Directory containing conversation data (default: ~/.openhands)",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=Path(__file__).parent / "dist",
+        help="Output directory for static site (default: ./dist)",
+    )
+    args = parser.parse_args()
+
+    # Get conversations directory and custom flag
+    conversations_dir, is_custom = get_conversations_dir(args.conversations_dir)
+
+    build_static_site(conversations_dir, args.output_dir, is_custom)
+
+
+if __name__ == "__main__":
+    main()

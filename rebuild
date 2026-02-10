@@ -1,0 +1,34 @@
+#!/bin/bash
+# Rebuild command for static Trajectory Visualizer
+# Usage: ./rebuild [conversations_directory]
+#
+# Examples:
+#   ./rebuild                          # Use default ~/.openhands
+#   ./rebuild /path/to/conversations   # Use custom directory
+#   ./rebuild ./conversations          # Use local conversations folder
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+echo "🔧 Rebuilding Trajectory Visualizer static site..."
+
+# Check if Python is available
+if ! command -v python3 &> /dev/null; then
+    echo "❌ Error: python3 is required but not installed"
+    exit 1
+fi
+
+# Run the build script with all arguments passed through
+python3 "$SCRIPT_DIR/build_static.py" "$@"
+
+echo ""
+echo "✅ Rebuild complete!"
+echo "📖 To view the site:"
+echo "   Option 1: Use the serve script:"
+echo "             ./serve"
+echo "             Then visit http://localhost:8050"
+echo ""
+echo "   Option 2: Run a local server manually:"
+echo "             cd dist && python3 -m http.server 8050"
+echo "             Then visit http://localhost:8050"

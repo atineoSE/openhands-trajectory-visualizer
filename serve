@@ -1,0 +1,18 @@
+#!/bin/bash
+# Simple HTTP server for the static Trajectory Visualizer
+# Usage: ./serve [port]
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PORT="${1:-8050}"
+
+echo "🚀 Starting Trajectory Visualizer server..."
+echo "   Directory: $SCRIPT_DIR/dist"
+echo "   URL: http://localhost:$PORT"
+echo ""
+echo ""
+echo "Press Ctrl+C to stop"
+echo ""
+
+cd "$SCRIPT_DIR/dist" && python3 -m http.server "$PORT"

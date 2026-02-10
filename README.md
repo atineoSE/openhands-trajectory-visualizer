@@ -11,7 +11,7 @@ Action detail: inspect action details, blending or unblending as needed
 ![Model stats](./img/trajectory_visualizer_stats.png)
 Model stats: inspect token usage and average turn time per model
 
-Try the example (here)[https://adriantineo.com/openhands-trajectory-visualizer/].
+Try the example [here](https://adriantineo.com/openhands-trajectory-visualizer/).
 
 ## Setup
 

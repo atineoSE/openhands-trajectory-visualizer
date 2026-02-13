@@ -7,6 +7,7 @@ Processes conversation data and generates static JSON files.
 import json
 import time
 import shutil
+import subprocess
 import argparse
 from pathlib import Path
 from datetime import datetime
@@ -341,91 +342,77 @@ def build_static_site(
     with open(data_dir / "trajectories.json", "w") as f:
         json.dump(trajectories, f, indent=2, default=str)
 
-    # Copy the HTML viewer
-    html_source = Path(__file__).parent / "trajectory-visualizer.html"
-    html_output = output_dir / "index.html"
+    # Build React app with Vite
+    print("\n📦 Building React app with Vite...")
+    result = subprocess.run(
+        ["npm", "run", "build"],
+        cwd=Path(__file__).parent,
+        capture_output=True,
+        text=True
+    )
+    if result.returncode != 0:
+        print(f"❌ Error building React app:")
+        print(result.stderr)
+        return
 
-    if html_source.exists():
-        # Read and modify the HTML for static mode
-        with open(html_source, "r") as f:
+    # The Vite build output is now in dist/, which is also our output_dir
+    # We just need to inject the static configuration into the index.html
+
+    # Inject static configuration into the built index.html
+    html_output = output_dir / "index.html"
+    
+    if html_output.exists():
+        with open(html_output, "r") as f:
             html_content = f.read()
 
-        # Inject static configuration
+        # Inject static configuration before the script
         static_config = f'''<script>
         window.TRAJECTORY_CONFIG = {{
             staticMode: true,
             isCustomDir: {str(is_custom_dir).lower()},
             directoryName: "{conversations_dir.name if is_custom_dir else "OpenHands"}"
         }};
-        </script>'''
-
-        # Insert config before closing </head> tag
-        html_content = html_content.replace("</head>", static_config + "\n</head>")
-
-        # Replace API calls with static file paths
-        status_replacement = """// Static mode: use embedded config
-                return Promise.resolve({
-                    status: 'ok',
-                    staticMode: true,
-                    is_custom_dir: window.TRAJECTORY_CONFIG.isCustomDir,
-                    directory_name: window.TRAJECTORY_CONFIG.directoryName
-                });"""
+        </script>
+'''
+        # Insert before the main script tag
         html_content = html_content.replace(
-            "const response = await fetch('/api/status');", status_replacement
-        )
-        html_content = html_content.replace(
-            "const response = await fetch('/api/trajectories');",
-            "const response = await fetch('data/trajectories.json');",
-        )
-        html_content = html_content.replace(
-            "const response = await fetch(`/api/trajectories/${trajectoryId}/events`);",
-            "const response = await fetch(`data/${trajectoryId}/events.json`);",
+            '<script type="module" crossorigin',
+            static_config + '<script type="module" crossorigin'
         )
 
-        # Disable auto-refresh in static mode
-        html_content = html_content.replace(
-            "// Start auto-refresh\n            startAutoRefresh();",
-            "// Static mode: auto-refresh disabled",
-        )
+        # Add file:// protocol detection
+        file_protocol_check = '''<script>
+        (function() {{
+            if (window.location.protocol === 'file:') {{
+                document.body.innerHTML = `
+                    <div style="padding: 40px; font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+                        <h1 style="color: #e76f51;">⚠️ Cannot Load Trajectories</h1>
+                        <p>The Trajectory Visualizer cannot run directly from a file:// URL due to browser security restrictions.</p>
+                        <h3>Solution: Use a Local Server</h3>
+                        <p>Run one of these commands in the project directory:</p>
+                        <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto;">
+        # Option 1: Use the provided serve script
+        ./serve
 
-        # Add file:// protocol detection and error handling
-        file_protocol_check = """
-        // Check if running from file:// protocol
-        if (window.location.protocol === 'file:') {
-            console.error('ERROR: File protocol detected. Cannot load data files.');
-            document.body.innerHTML = `
-                <div style="padding: 40px; font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h1 style="color: #e76f51;">⚠️ Cannot Load Trajectories</h1>
-                    <p>The Trajectory Visualizer cannot run directly from a file:// URL due to browser security restrictions.</p>
-                    <h3>Solution: Use a Local Server</h3>
-                    <p>Run one of these commands in the project directory:</p>
-                    <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto;">
-# Option 1: Use the provided serve script
-./serve
+        # Option 2: Use Python directly
+        cd dist && python3 -m http.server 8050
 
-# Option 2: Use Python directly
-cd dist && python3 -m http.server 8050
-
-# Option 3: Use npx serve
-npx serve dist -p 8050</pre>
-                    <p>Then open <code>http://localhost:8050</code> in your browser.</p>
-                </div>
-            `;
-            throw new Error('File protocol not supported. Please use a local server.');
-        }
-        """
-
-        # Insert the check at the beginning of the init function
-        html_content = html_content.replace(
-            "// Initialize\n        async function init() {",
-            "// Initialize\n        async function init() {\n" + file_protocol_check,
-        )
+        # Option 3: Use npx serve
+        npx serve dist -p 8050</pre>
+                        <p>Then open <code>http://localhost:8050</code> in your browser.</p>
+                    </div>
+                `;
+            }}
+        }})();
+        </script>
+'''
+        html_content = html_content.replace('</head>', file_protocol_check + '</head>')
 
         with open(html_output, "w") as f:
             f.write(html_content)
-        print(f"   Created: {html_output}")
+        print(f"   Updated: {html_output}")
     else:
-        print(f"⚠️  Warning: HTML source not found: {html_source}")
+        print(f"⚠️  Warning: HTML output not found: {html_output}")
 
     print("\n✅ Build complete!")
     print(f"   Output directory: {output_dir}")

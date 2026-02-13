@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { ChevronRight, FileText, User, Bot, Play, Eye, Activity } from 'lucide-react'
+import { ChevronRight, FileText, User, Bot, Activity } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -34,13 +34,20 @@ interface Event {
   source: string
   kind: string
   timestamp: string
-  content?: string
-  thought?: string
-  action?: string
-  observation?: string
+  content?: unknown
+  thought?: unknown
+  action?: unknown
+  observation?: unknown
   model?: string
   duration?: number
-  error?: string
+  error?: unknown
+  // AgentStartEvent fields
+  system_prompt?: unknown
+  // LLM response fields
+  llm_message?: unknown
+  // Additional fields
+  summary?: string
+  tool_name?: string
 }
 
 interface ModelStats {
@@ -92,8 +99,6 @@ function getEventIcon(source: string) {
     case 'system': return <FileText className="h-4 w-4" />
     case 'user': return <User className="h-4 w-4" />
     case 'agent': return <Bot className="h-4 w-4" />
-    case 'action': return <Play className="h-4 w-4" />
-    case 'observation': return <Eye className="h-4 w-4" />
     default: return <Activity className="h-4 w-4" />
   }
 }
@@ -103,24 +108,71 @@ function getEventIconClass(source: string): string {
     case 'system': return 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300'
     case 'user': return 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300'
     case 'agent': return 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300'
-    case 'action': return 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300'
-    case 'observation': return 'bg-orange-100 text-orange-600 dark:bg-orange-900 dark:text-orange-300'
-    case 'condensation': return 'bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-300'
-    case 'error': return 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300'
     default: return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'
   }
 }
 
-function getEventKindClass(kind: string): string {
+function getEventKindClass(kind: string | undefined): string {
+  if (!kind) return 'text-gray-600 dark:text-gray-400'
   switch (kind) {
-    case 'system': return 'text-blue-600 dark:text-blue-400'
-    case 'user': return 'text-blue-600 dark:text-blue-400'
-    case 'agent': return 'text-green-600 dark:text-green-400'
-    case 'action': return 'text-green-600 dark:text-green-400'
-    case 'observation': return 'text-yellow-600 dark:text-yellow-400'
-    case 'condensation': return 'text-purple-600 dark:text-purple-400'
+    case 'AgentStartEvent': return 'text-blue-600 dark:text-blue-400'
+    case 'AgentStepEvent': return 'text-green-600 dark:text-green-400'
+    case 'ActionEvent': return 'text-green-600 dark:text-green-400'
+    case 'ObservationEvent': return 'text-yellow-600 dark:text-yellow-400'
     default: return 'text-gray-600 dark:text-gray-400'
   }
+}
+
+// Helper to convert unknown to string
+function toString(value: unknown): string {
+  if (typeof value === 'string') return value
+  if (value === null || value === undefined) return ''
+  return JSON.stringify(value, null, 2)
+}
+
+// Extract content fields from event for display
+function getEventContent(event: Event): { thought?: string; action?: string; observation?: string; content?: string; error?: string } {
+  // Handle AgentStepEvent or ActionEvent - thought can be string, array, or object with text
+  if (event.thought) {
+    const thoughtValue = event.thought
+    let thoughtText = ''
+    
+    if (Array.isArray(thoughtValue)) {
+      thoughtText = thoughtValue.map(t => toString(t)).join('\n')
+    } else if (typeof thoughtValue === 'object' && thoughtValue !== null && 'text' in thoughtValue) {
+      thoughtText = toString((thoughtValue as { text: unknown }).text)
+    } else {
+      thoughtText = toString(thoughtValue)
+    }
+    return { thought: thoughtText }
+  }
+  
+  // Handle action field
+  if (event.action) {
+    return { action: toString(event.action) }
+  }
+  
+  // Handle observation field  
+  if ('observation' in event && event.observation) {
+    const obs = event.observation as Record<string, unknown>
+    if (obs.error) {
+      return { error: toString(obs.error) }
+    }
+    return { observation: toString(event.observation) }
+  }
+  
+  // Handle content field
+  if (event.content) {
+    return { content: toString(event.content) }
+  }
+  
+  // Handle system_prompt (for AgentStartEvent)
+  if ('system_prompt' in event && event.system_prompt) {
+    const sp = event.system_prompt as { text?: unknown }
+    return { content: toString(sp.text) }
+  }
+  
+  return {}
 }
 
 export default function App() {
@@ -474,36 +526,43 @@ export default function App() {
                       
                       {isExpanded && (
                         <div className="px-4 pb-4 pt-0 space-y-3">
-                          {event.thought && (
-                            <div className="bg-muted rounded-lg p-4">
-                              <div className="text-xs font-semibold text-muted-foreground mb-2">THOUGHT</div>
-                              <pre className="text-xs whitespace-pre-wrap font-mono">{event.thought}</pre>
-                            </div>
-                          )}
-                          {event.action && (
-                            <div className="bg-muted rounded-lg p-4">
-                              <div className="text-xs font-semibold text-muted-foreground mb-2">ACTION</div>
-                              <pre className="text-xs whitespace-pre-wrap font-mono">{event.action}</pre>
-                            </div>
-                          )}
-                          {event.observation && (
-                            <div className="bg-muted rounded-lg p-4">
-                              <div className="text-xs font-semibold text-muted-foreground mb-2">OBSERVATION</div>
-                              <pre className="text-xs whitespace-pre-wrap font-mono">{event.observation}</pre>
-                            </div>
-                          )}
-                          {event.content && (
-                            <div className="bg-muted rounded-lg p-4">
-                              <div className="text-xs font-semibold text-muted-foreground mb-2">CONTENT</div>
-                              <pre className="text-xs whitespace-pre-wrap font-mono">{event.content}</pre>
-                            </div>
-                          )}
-                          {event.error && (
-                            <div className="bg-destructive/10 rounded-lg p-4 border border-destructive">
-                              <div className="text-xs font-semibold text-destructive mb-2">ERROR</div>
-                              <pre className="text-xs whitespace-pre-wrap font-mono text-destructive">{event.error}</pre>
-                            </div>
-                          )}
+                          {(() => {
+                            const content = getEventContent(event)
+                            return (
+                              <>
+                                {content.thought && (
+                                  <div className="bg-muted rounded-lg p-4">
+                                    <div className="text-xs font-semibold text-muted-foreground mb-2">THOUGHT</div>
+                                    <pre className="text-xs whitespace-pre-wrap font-mono">{content.thought}</pre>
+                                  </div>
+                                )}
+                                {content.action && (
+                                  <div className="bg-muted rounded-lg p-4">
+                                    <div className="text-xs font-semibold text-muted-foreground mb-2">ACTION</div>
+                                    <pre className="text-xs whitespace-pre-wrap font-mono">{content.action}</pre>
+                                  </div>
+                                )}
+                                {content.observation && (
+                                  <div className="bg-muted rounded-lg p-4">
+                                    <div className="text-xs font-semibold text-muted-foreground mb-2">OBSERVATION</div>
+                                    <pre className="text-xs whitespace-pre-wrap font-mono">{content.observation}</pre>
+                                  </div>
+                                )}
+                                {content.content && (
+                                  <div className="bg-muted rounded-lg p-4">
+                                    <div className="text-xs font-semibold text-muted-foreground mb-2">CONTENT</div>
+                                    <pre className="text-xs whitespace-pre-wrap font-mono">{content.content}</pre>
+                                  </div>
+                                )}
+                                {content.error && (
+                                  <div className="bg-destructive/10 rounded-lg p-4 border border-destructive">
+                                    <div className="text-xs font-semibold text-destructive mb-2">ERROR</div>
+                                    <pre className="text-xs whitespace-pre-wrap font-mono text-destructive">{content.error}</pre>
+                                  </div>
+                                )}
+                              </>
+                            )
+                          })()}
                         </div>
                       )}
                     </CardContent>
